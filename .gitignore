@@ -1,0 +1,85 @@
+# ============================================================
+# Jo Modas - arquivos ignorados pelo Git
+#
+# Regra geral: codigo-fonte e scripts SQL do projeto SAO versionados.
+# Fica de fora apenas o que e local, sensivel ou gerado.
+# ============================================================
+
+# ------------------------------------------------------------
+# Configuracao local com credenciais
+# config.example.php continua versionado como modelo.
+# ------------------------------------------------------------
+/config/config.php
+/config/config.local.php
+.env
+.env.*
+
+# ------------------------------------------------------------
+# Imagens enviadas pelo painel administrativo
+# A pasta permanece no repositorio por causa do .htaccess.
+# ------------------------------------------------------------
+/uploads/products/*
+!/uploads/products/.htaccess
+
+# ------------------------------------------------------------
+# Dumps e backups do banco
+# database/schema.sql e database/seed.sql NAO sao ignorados.
+# ------------------------------------------------------------
+/database/backups/
+*.sql.gz
+*.sql.zip
+
+# ------------------------------------------------------------
+# Arquivos temporarios da fase de instalacao
+# ------------------------------------------------------------
+/test_connection.php
+/install.php
+/phpinfo.php
+
+# ------------------------------------------------------------
+# Logs e temporarios
+# ------------------------------------------------------------
+*.log
+error_log
+/logs/
+/tmp/
+/cache/
+*.tmp
+*.bak
+*.orig
+*~
+
+# ------------------------------------------------------------
+# Editores e IDEs
+# ------------------------------------------------------------
+/.vscode/
+/.idea/
+*.code-workspace
+*.sublime-project
+*.sublime-workspace
+nbproject/
+.project
+.buildpath
+.settings/
+*.swp
+*.swo
+
+# ------------------------------------------------------------
+# Sistema operacional
+# ------------------------------------------------------------
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+desktop.ini
+$RECYCLE.BIN/
+.DS_Store
+._*
+.Spotlight-V100
+.Trashes
+
+# ------------------------------------------------------------
+# Envio para a hospedagem
+# ------------------------------------------------------------
+.ftpconfig
+sftp-config.json
+/deploy/
