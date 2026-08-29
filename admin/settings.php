@@ -25,12 +25,16 @@ if (is_post()) {
 
     $values['store_name'] = post('store_name');
 
-    // O que o lojista digita costuma vir como +55 (11) 99999-9999.
-    // Guardamos so os digitos, que e o formato aceito pelo link wa.me.
-    $rawNumber = post('whatsapp_number');
-    $digits    = preg_replace('/\D+/', '', $rawNumber);
+    // O lojista digita como quiser: +55 (42) 99987-4363 ou 42999874363.
+    // normalize_whatsapp_number devolve sempre o formato internacional,
+    // ou '' quando o numero nao serve.
+    $rawNumber  = post('whatsapp_number');
+    $typed      = whatsapp_digits($rawNumber);
+    $normalized = normalize_whatsapp_number($rawNumber);
 
-    $values['whatsapp_number'] = $digits;
+    // Ao recusar, o formulario devolve o que a pessoa digitou, para ela
+    // ver o que corrigir em vez de encontrar o campo vazio.
+    $values['whatsapp_number'] = $normalized !== '' ? $normalized : $rawNumber;
 
     if ($values['store_name'] === '') {
         $errors[] = 'Informe o nome da loja.';
@@ -38,20 +42,30 @@ if (is_post()) {
         $errors[] = 'O nome da loja deve ter no maximo ' . STORE_NAME_MAX . ' caracteres.';
     }
 
-    // Numero em branco e permitido: desliga o checkout de proposito.
-    if ($digits !== '' && (strlen($digits) < 10 || strlen($digits) > 15)) {
-        $errors[] = 'O numero deve ter entre 10 e 15 digitos, contando o codigo do pais.';
+    // Campo em branco continua valido: desliga o checkout de proposito.
+    // Ja um campo preenchido que nao normaliza e recusado, e nao apenas
+    // sinalizado: gravar assim produziria um link wa.me que nao abre.
+    //
+    // A condicao olha o texto cru, e nao os digitos: "abcdef" nao tem
+    // digito nenhum, e comparando por digitos passaria por campo vazio
+    // e apagaria o numero da loja calado.
+    if ($rawNumber !== '' && $normalized === '') {
+        $errors[] = 'Numero de WhatsApp invalido. Use DDD + numero '
+            . '(42999874363) ou o formato internacional (5542999874363).';
     }
 
     if ($errors === []) {
         set_setting('store_name', $values['store_name']);
-        set_setting('whatsapp_number', $values['whatsapp_number']);
+        set_setting('whatsapp_number', $normalized);
 
-        if ($digits === '') {
+        $values['whatsapp_number'] = $normalized;
+
+        if ($normalized === '') {
             flash('error', 'Configuracoes salvas, mas sem numero o envio de pedidos fica desligado.');
-        } elseif (strpos($digits, '55') !== 0) {
-            flash('success', 'Configuracoes salvas. Confira o numero: ele nao comeca com 55, '
-                . 'o codigo do Brasil.');
+        } elseif ($normalized !== $typed) {
+            // Avisa quando o codigo do pais foi acrescentado sozinho.
+            flash('success', 'Configuracoes salvas. O numero foi gravado como '
+                . $normalized . ', no formato internacional.');
         } else {
             flash('success', 'Configuracoes salvas.');
         }
@@ -90,10 +104,12 @@ require __DIR__ . '/includes/header.php';
     <label class="field">
         <span class="field-label">Numero de WhatsApp</span>
         <input type="text" name="whatsapp_number" value="<?= e($values['whatsapp_number']) ?>"
-               inputmode="numeric" placeholder="5511999999999">
+               inputmode="numeric" placeholder="5542999874363">
         <span class="field-hint">
-            Com codigo do pais e DDD. Pode digitar com simbolos
-            (+55 11 99999-9999) que so os digitos sao guardados.
+            Numero brasileiro, com DDD. Pode digitar com simbolos
+            (+55 42 99987-4363) ou so o DDD e o numero (42999874363):
+            o codigo do pais 55 e acrescentado sozinho e o valor e
+            guardado no formato internacional.
             Deixe em branco para desligar o envio de pedidos.
         </span>
     </label>

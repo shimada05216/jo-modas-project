@@ -17,10 +17,11 @@ INSERT INTO `admins` (`name`, `email`, `password_hash`, `active`) VALUES
 -- ------------------------------------------------------------
 -- Configuracoes da loja
 -- whatsapp_number: somente digitos, com codigo do pais (55) e DDD.
+-- Trocavel a qualquer momento no painel, em Configuracoes.
 -- ------------------------------------------------------------
 INSERT INTO `settings` (`setting_key`, `setting_value`) VALUES
 ('store_name',      'Jo Modas'),
-('whatsapp_number', '5511999999999');
+('whatsapp_number', '5542999874363');
 
 -- ------------------------------------------------------------
 -- Categorias de exemplo

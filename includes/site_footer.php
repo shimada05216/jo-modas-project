@@ -13,7 +13,7 @@
  */
 
 $footerCategories = active_categories();
-$footerWhatsapp   = preg_replace('/\D+/', '', (string) setting('whatsapp_number', ''));
+$footerWhatsapp   = store_whatsapp_number();
 $footerStore      = setting('store_name', 'Jo Modas');
 ?>
 </main>

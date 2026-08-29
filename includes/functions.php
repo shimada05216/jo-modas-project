@@ -423,6 +423,79 @@ function setting(string $key, ?string $default = null): ?string
 }
 
 // =========================================================
+// WhatsApp
+// =========================================================
+
+/**
+ * Reduz o que o lojista digitou a somente digitos.
+ *
+ * O painel aceita "+55 42 99987-4363", que e como o numero costuma ser
+ * escrito, mas o link wa.me nao aceita sinal, espaco nem hifen. Entra
+ * "+55 42 99987-4363", sai "5542999874363".
+ */
+function whatsapp_digits(string $value): string
+{
+    return (string) preg_replace('/\D+/', '', $value);
+}
+
+/**
+ * Poe um numero brasileiro no formato internacional que o wa.me exige.
+ *
+ * Formatos aceitos:
+ *   nacional      DDD + 8 (fixo) ou 9 (celular)   10 ou 11 digitos
+ *   internacional 55 + DDD + 8 ou 9               12 ou 13 digitos
+ *
+ * O que manda e o COMPRIMENTO, nunca o prefixo. O DDD 55 existe (Santa
+ * Maria, RS), entao "55999874363" tem 11 digitos e comeca com 55 mas
+ * ainda e um numero nacional: vira "5555999874363". Decidir pelo prefixo
+ * geraria um link quebrado justamente para essa regiao.
+ *
+ * Devolve '' quando o valor nao e um numero brasileiro valido. Quem
+ * chama trata o vazio como "sem numero", e nao como numero qualquer.
+ */
+function normalize_whatsapp_number(string $value): string
+{
+    $digits = whatsapp_digits($value);
+    $length = strlen($digits);
+
+    // Formato nacional: falta o codigo do pais, entao acrescenta.
+    if ($length === 10 || $length === 11) {
+        $digits = '55' . $digits;
+        $length = strlen($digits);
+    }
+
+    if (($length !== 12 && $length !== 13) || strncmp($digits, '55', 2) !== 0) {
+        return '';
+    }
+
+    // DDD brasileiro vai de 11 a 99 e nunca termina em zero.
+    $ddd = (int) substr($digits, 2, 2);
+
+    if ($ddd < 11 || $ddd > 99 || $ddd % 10 === 0) {
+        return '';
+    }
+
+    // Celular tem 9 digitos e, desde 2016, sempre comeca com 9.
+    if ($length === 13 && $digits[4] !== '9') {
+        return '';
+    }
+
+    return $digits;
+}
+
+/**
+ * Numero da loja, pronto para montar o link do wa.me.
+ *
+ * Normaliza tambem na leitura, e nao so na gravacao: um valor antigo ou
+ * editado direto no banco e corrigido ou descartado aqui, de modo que a
+ * loja nunca chegue a montar uma URL invalida.
+ */
+function store_whatsapp_number(): string
+{
+    return normalize_whatsapp_number((string) setting('whatsapp_number', ''));
+}
+
+// =========================================================
 // Paginas temporarias de instalacao
 // =========================================================
 

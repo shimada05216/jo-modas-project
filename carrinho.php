@@ -13,8 +13,9 @@
 require_once __DIR__ . '/includes/bootstrap.php';
 
 // Numero e nome vem do painel (Configuracoes), nunca do codigo.
-// Somente digitos: o link wa.me nao aceita espacos, parenteses ou tracos.
-$whatsapp  = preg_replace('/\D+/', '', (string) setting('whatsapp_number', ''));
+// store_whatsapp_number() devolve somente digitos, ja conferidos, ou ''
+// quando nao ha numero utilizavel cadastrado.
+$whatsapp  = store_whatsapp_number();
 $storeName = (string) setting('store_name', 'Jo Modas');
 
 // A saudacao e montada aqui, e nao no JavaScript, porque leva acento e o
