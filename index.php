@@ -46,7 +46,7 @@ require __DIR__ . '/includes/site_header.php';
 <section class="hero<?= $heroImage === null ? ' hero-plain' : '' ?>">
     <div class="hero-text">
         <span class="hero-kicker">Nova coleção</span>
-        <h1 class="hero-title">Peças que<br>combinam com<em>o seu dia</em></h1>
+        <h1 class="hero-title">Peças que <br>combinam com <em>o seu dia</em></h1>
         <p class="hero-sub">
             Seleção de moda feminina escolhida peça a peça.
             Escolha cor e tamanho e feche o pedido pelo WhatsApp.
