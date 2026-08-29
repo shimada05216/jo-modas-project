@@ -55,7 +55,7 @@ require __DIR__ . '/includes/header.php';
 
     <div class="card">
         <div>
-            <span class="card-label">Variacoes sem estoque</span>
+            <span class="card-label">Variações sem estoque</span>
             <span class="card-value"><?= e((string) $counts['out_of_stock']) ?></span>
         </div>
         <span class="card-icon tom-4" aria-hidden="true">
@@ -67,7 +67,7 @@ require __DIR__ . '/includes/header.php';
 <p class="hint">
     <a href="<?= e(base_url('admin/categories.php')) ?>">Gerenciar categorias</a> ou
     <a href="<?= e(base_url('admin/products.php')) ?>">gerenciar produtos</a>.
-    Imagens e variacoes de cor/tamanho entram na proxima etapa.
+    Imagens e variações de cor/tamanho entram na próxima etapa.
 </p>
 
 <?php require __DIR__ . '/includes/footer.php'; ?>

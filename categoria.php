@@ -27,12 +27,12 @@ if ($slug !== '') {
 if ($category === false) {
     http_response_code(404);
 
-    $pageTitle = 'Categoria nao encontrada';
+    $pageTitle = 'Categoria não encontrada';
     require __DIR__ . '/includes/site_header.php';
     ?>
     <div class="empty-state">
-        <h2>Categoria nao encontrada</h2>
-        <p>Essa categoria nao existe ou saiu do ar.</p>
+        <h2>Categoria não encontrada</h2>
+        <p>Essa categoria não existe ou saiu do ar.</p>
         <a class="btn btn-solid" href="<?= e(base_url('index.php')) ?>">Voltar para a loja</a>
     </div>
     <?php
@@ -60,8 +60,8 @@ $metaDesc   = $category['description'] !== null && $category['description'] !== 
 require __DIR__ . '/includes/site_header.php';
 ?>
 
-<nav class="crumb" aria-label="Voce esta em">
-    <a href="<?= e(base_url('index.php')) ?>">Inicio</a>
+<nav class="crumb" aria-label="Você está em">
+    <a href="<?= e(base_url('index.php')) ?>">Início</a>
     <span class="crumb-sep">/</span>
     <span aria-current="page"><?= e($category['name']) ?></span>
 </nav>
@@ -82,7 +82,7 @@ require __DIR__ . '/includes/site_header.php';
 
     <div class="empty-state">
         <h2>Nada por aqui ainda</h2>
-        <p>Esta categoria ainda nao tem produtos publicados.</p>
+        <p>Esta categoria ainda não tem produtos publicados.</p>
         <a class="btn btn-solid" href="<?= e(base_url('index.php')) ?>">Ver a loja</a>
     </div>
 
@@ -95,19 +95,19 @@ require __DIR__ . '/includes/site_header.php';
     </div>
 
     <?php if ($pages > 1): ?>
-        <nav class="pager" aria-label="Paginas">
+        <nav class="pager" aria-label="Páginas">
             <?php if ($page > 1): ?>
                 <a class="pager-btn" href="<?= e(base_url('categoria.php?slug='
                     . rawurlencode($category['slug']) . '&pagina=' . ($page - 1))) ?>">Anterior</a>
             <?php endif; ?>
 
             <span class="pager-info">
-                Pagina <?= e((string) $page) ?> de <?= e((string) $pages) ?>
+                Página <?= e((string) $page) ?> de <?= e((string) $pages) ?>
             </span>
 
             <?php if ($page < $pages): ?>
                 <a class="pager-btn" href="<?= e(base_url('categoria.php?slug='
-                    . rawurlencode($category['slug']) . '&pagina=' . ($page + 1))) ?>">Proxima</a>
+                    . rawurlencode($category['slug']) . '&pagina=' . ($page + 1))) ?>">Próxima</a>
             <?php endif; ?>
         </nav>
     <?php endif; ?>

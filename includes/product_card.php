@@ -22,7 +22,7 @@ $cardUrl      = base_url('produto.php?slug=' . rawurlencode($card['slug']));
 
             <div class="card-flags">
                 <?php if ($cardHasPromo): ?>
-                    <span class="flag flag-promo">Promocao</span>
+                    <span class="flag flag-promo">Promoção</span>
                 <?php endif; ?>
                 <?php if ((int) $card['is_new'] === 1): ?>
                     <span class="flag">Novidade</span>

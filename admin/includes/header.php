@@ -1,13 +1,13 @@
 <?php
 /**
- * Jo Modas - Topo das paginas do painel
+ * Jo Modas - Topo das páginas do painel
  *
  * Antes de incluir este arquivo, defina:
- *   $pageTitle  titulo da pagina
+ *   $pageTitle  titulo da página
  *   $activeNav  item de menu em destaque (dashboard, categorias, ...)
  *
  * A barra lateral lista somente o que existe de verdade no sistema.
- * Os mockups mostram tambem Pedidos, Clientes, Cupons, Banners,
+ * Os mockups mostram também Pedidos, Clientes, Cupons, Banners,
  * Usuarios, Relatorios e Logs: nada disso foi construido, e um menu
  * que leva a lugar nenhum atrapalha mais do que ajuda.
  */
@@ -22,7 +22,7 @@ $activeNav = $activeNav ?? '';
 $flashes   = take_flashes();
 
 /**
- * Um item da barra lateral, com o icone ja desenhado.
+ * Um item da barra lateral, com o icone já desenhado.
  */
 $navItem = static function (string $key, string $label, string $href, string $icon) use ($activeNav): void {
     $icons = [
@@ -63,7 +63,7 @@ $navItem = static function (string $key, string $label, string $href, string $ic
         $navItem('dashboard',     'Painel',        base_url('admin/index.php'),      'painel');
         $navItem('categorias',    'Categorias',    base_url('admin/categories.php'), 'tag');
         $navItem('produtos',      'Produtos',      base_url('admin/products.php'),   'caixa');
-        $navItem('configuracoes', 'Configuracoes', base_url('admin/settings.php'),   'engre');
+        $navItem('configuracoes', 'Configurações', base_url('admin/settings.php'),   'engre');
         ?>
     </nav>
 

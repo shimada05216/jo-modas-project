@@ -26,7 +26,7 @@ $footerStore      = setting('store_name', 'Jo Modas');
                 <path d="m9 12 2 2 4-4"/>
             </svg>
             <div>
-                <b>Pecas conferidas</b>
+                <b>Peças conferidas</b>
                 <span>uma a uma antes do envio</span>
             </div>
         </div>
@@ -38,7 +38,7 @@ $footerStore      = setting('store_name', 'Jo Modas');
             </svg>
             <div>
                 <b>Atendimento direto</b>
-                <span>voce fala com a gente</span>
+                <span>você fala com a gente</span>
             </div>
         </div>
 
@@ -62,7 +62,7 @@ $footerStore      = setting('store_name', 'Jo Modas');
             </svg>
             <div>
                 <b>Escolha cor e tamanho</b>
-                <span>estoque real por variacao</span>
+                <span>estoque real por variação</span>
             </div>
         </div>
     </div>
@@ -76,7 +76,7 @@ $footerStore      = setting('store_name', 'Jo Modas');
                      alt="<?= e($footerStore) ?>" width="300" height="78">
             </a>
             <p>
-                Moda feminina escolhida peca a peca. Monte seu carrinho,
+                Moda feminina escolhida peça a peça. Monte seu carrinho,
                 escolha cor e tamanho, e finalize o pedido com a gente
                 pelo WhatsApp.
             </p>
@@ -114,7 +114,7 @@ $footerStore      = setting('store_name', 'Jo Modas');
             <?php endif; ?>
 
             <p class="ftr-note">
-                Pedidos finalizados pelo WhatsApp. Nao pedimos dados de
+                Pedidos finalizados pelo WhatsApp. Não pedimos dados de
                 pagamento pelo site.
             </p>
         </div>

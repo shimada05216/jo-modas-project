@@ -3,6 +3,13 @@
 Options -Indexes
 AddDefaultCharset UTF-8
 
+# Os arquivos .js e .css tem texto acentuado voltado ao cliente.
+# Sem o charset declarado, alguns servidores entregam sem codificacao
+# e o navegador exibe "PeÃ§as" no lugar de "Peças".
+<IfModule mod_mime.c>
+    AddCharset UTF-8 .js .css
+</IfModule>
+
 <IfModule mod_dir.c>
     DirectoryIndex index.php index.html
 </IfModule>

@@ -3,8 +3,8 @@
  * Jo Modas - Painel: lista de categorias
  *
  * Tambem trata as acoes de ativar/desativar e apagar, que chegam por POST
- * com token CSRF. Depois de cada acao a pagina redireciona (padrao POST/
- * Redirect/GET), para que atualizar o navegador nao repita a operacao.
+ * com token CSRF. Depois de cada acao a página redireciona (padrão POST/
+ * Redirect/GET), para que atualizar o navegador não repita a operacao.
  */
 
 require_once __DIR__ . '/../includes/bootstrap.php';
@@ -18,7 +18,7 @@ if (is_post()) {
     $id     = input_int('id');
 
     if ($id === null || $id < 1) {
-        flash('error', 'Categoria invalida.');
+        flash('error', 'Categoria inválida.');
         redirect(base_url('admin/categories.php'));
     }
 
@@ -27,7 +27,7 @@ if (is_post()) {
     $category = $stmt->fetch();
 
     if ($category === false) {
-        flash('error', 'Categoria nao encontrada.');
+        flash('error', 'Categoria não encontrada.');
         redirect(base_url('admin/categories.php'));
     }
 
@@ -48,9 +48,9 @@ if (is_post()) {
     }
 
     // ---------------------------------------------------------
-    // Apagar, somente quando nao ha produtos ligados
+    // Apagar, somente quando não ha produtos ligados
     //
-    // A chave estrangeira usa ON DELETE RESTRICT, entao o banco ja
+    // A chave estrangeira usa ON DELETE RESTRICT, entao o banco já
     // barraria a exclusao. A contagem abaixo existe para transformar
     // esse erro tecnico numa mensagem que o lojista entende.
     // ---------------------------------------------------------
@@ -61,7 +61,7 @@ if (is_post()) {
 
         if ($productCount > 0) {
             flash('error', sprintf(
-                'Nao e possivel apagar "%s": ha %d produto(s) nesta categoria. '
+                'Não e possível apagar "%s": ha %d produto(s) nesta categoria. '
                 . 'Mova os produtos para outra categoria antes de apagar.',
                 $category['name'],
                 $productCount
@@ -78,7 +78,7 @@ if (is_post()) {
         } catch (PDOException $e) {
             // Rede de seguranca: se um produto foi criado nesta categoria
             // entre a contagem acima e o DELETE, a FK barra a operacao.
-            flash('error', 'Nao foi possivel apagar: a categoria passou a ter produtos.');
+            flash('error', 'Não foi possível apagar: a categoria passou a ter produtos.');
         }
 
         redirect(base_url('admin/categories.php'));
@@ -91,7 +91,7 @@ if (is_post()) {
 // ---------------------------------------------------------
 // Listagem
 // O LEFT JOIN traz quantos produtos cada categoria tem, o que decide
-// se o botao de apagar aparece habilitado ou nao.
+// se o botao de apagar aparece habilitado ou não.
 // ---------------------------------------------------------
 
 $categories = db()->query(
@@ -129,8 +129,8 @@ require __DIR__ . '/includes/header.php';
                 <th>Nome</th>
                 <th>Slug</th>
                 <th class="col-num">Produtos</th>
-                <th>Situacao</th>
-                <th class="col-actions">Acoes</th>
+                <th>Situação</th>
+                <th class="col-actions">Ações</th>
             </tr>
         </thead>
         <tbody>
@@ -167,7 +167,7 @@ require __DIR__ . '/includes/header.php';
                                     title="Ha produtos nesta categoria">Apagar</button>
                         <?php else: ?>
                             <form method="post" action="<?= e(base_url('admin/categories.php')) ?>"
-                                  onsubmit="return confirm('Apagar esta categoria? A acao nao pode ser desfeita.');">
+                                  onsubmit="return confirm('Apagar esta categoria? A acao não pode ser desfeita.');">
                                 <?= csrf_field() ?>
                                 <input type="hidden" name="action" value="delete">
                                 <input type="hidden" name="id" value="<?= e((string) $category['id']) ?>">
@@ -183,7 +183,7 @@ require __DIR__ . '/includes/header.php';
     </div>
 
     <p class="hint">
-        A ordem controla a posicao no menu da loja: menor numero aparece primeiro.
+        A ordem controla a posicao no menu da loja: menor número aparece primeiro.
         Categorias inativas somem do menu, mas continuam guardadas aqui.
     </p>
 

@@ -155,8 +155,8 @@
             button.classList.add('is-active');
 
             stockLine.textContent = variant.stock === 1
-                ? 'Ultima peca disponivel.'
-                : variant.stock + ' pecas disponiveis.';
+                ? 'Última peça disponível.'
+                : variant.stock + ' peças disponíveis.';
 
             qtyInput.disabled = false;
             qtyInput.max = String(variant.stock);
@@ -182,7 +182,7 @@
 
             stockLine.textContent = anyStock
                 ? 'Escolha o tamanho.'
-                : 'Todos os tamanhos desta cor estao esgotados.';
+                : 'Todos os tamanhos desta cor estão esgotados.';
         }
 
         Array.prototype.forEach.call(colorList.children, function (button) {
@@ -265,7 +265,7 @@
 
             addedMsg.hidden = false;
             addedMsg.firstChild.textContent = alreadyMaxed
-                ? 'Voce ja tem todo o estoque disponivel no carrinho. '
+                ? 'Você já tem todo o estoque disponível no carrinho. '
                 : 'Produto adicionado. ';
         });
     }
@@ -300,8 +300,8 @@
                 renderCart(root, reconcile(items, payload.items || []));
             })
             .catch(function () {
-                root.innerHTML = '<p class="notice notice-warn">Nao foi possivel conferir '
-                    + 'o carrinho agora. Atualize a pagina e tente de novo.</p>';
+                root.innerHTML = '<p class="notice notice-warn">Não foi possível conferir '
+                    + 'o carrinho agora. Atualize a página e tente de novo.</p>';
             });
     }
 
@@ -367,7 +367,7 @@
     }
 
     function renderEmpty(root) {
-        root.innerHTML = '<p class="notice">Seu carrinho esta vazio.</p>';
+        root.innerHTML = '<p class="notice">Seu carrinho está vazio.</p>';
         updateBadge([]);
     }
 
@@ -410,12 +410,12 @@
             warn.className = 'notice notice-warn';
             warn.textContent = blocked === 1
                 ? 'Um item saiu de estoque e precisa ser removido antes de enviar o pedido.'
-                : blocked + ' itens sairam de estoque e precisam ser removidos antes de enviar o pedido.';
+                : blocked + ' itens saíram de estoque e precisam ser removidos antes de enviar o pedido.';
             summary.appendChild(warn);
         }
 
         var whatsapp = root.dataset.whatsapp || '';
-        var greeting = root.dataset.greeting || 'Ola, gostaria de fazer este pedido:';
+        var greeting = root.dataset.greeting || 'Olá, gostaria de fazer este pedido:';
 
         var buyable = items.filter(function (item) { return item.available; });
 
@@ -484,7 +484,7 @@
         if (!item.available) {
             var out = document.createElement('p');
             out.className = 'cart-out';
-            out.textContent = 'Indisponivel no momento';
+            out.textContent = 'Indisponível no momento';
             info.appendChild(out);
         }
 

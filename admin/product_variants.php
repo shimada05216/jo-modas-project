@@ -1,13 +1,13 @@
 <?php
 /**
- * Jo Modas - Painel: variacoes do produto
+ * Jo Modas - Painel: variações do produto
  *
- * Uma variacao e a combinacao produto + cor + tamanho, e e nela que mora
+ * Uma variação e a combinacao produto + cor + tamanho, e e nela que mora
  * o estoque. Nenhuma tela do site desconta estoque sozinha: o checkout
- * pelo WhatsApp so monta a mensagem, e a baixa e feita aqui, a mao,
+ * pelo WhatsApp só monta a mensagem, e a baixa e feita aqui, a mao,
  * depois que a venda se confirma.
  *
- * A combinacao cor + tamanho e unica por produto. A garantia final e a
+ * A combinacao cor + tamanho e única por produto. A garantia final e a
  * chave uq_variants_combo; as conferencias abaixo existem para virar
  * mensagem em vez de erro de banco.
  */
@@ -24,7 +24,7 @@ const VARIANT_STOCK_MAX = 999999;
 $productId = input_int('product_id');
 
 if ($productId === null || $productId < 1) {
-    flash('error', 'Produto invalido.');
+    flash('error', 'Produto inválido.');
     redirect(base_url('admin/products.php'));
 }
 
@@ -33,17 +33,17 @@ $stmt->execute([$productId]);
 $product = $stmt->fetch();
 
 if ($product === false) {
-    flash('error', 'Produto nao encontrado.');
+    flash('error', 'Produto não encontrado.');
     redirect(base_url('admin/products.php'));
 }
 
 $redirect = base_url('admin/product_variants.php?product_id=' . $productId);
 
 /**
- * Le e confere os campos de uma variacao vindos do POST.
+ * Le e confere os campos de uma variação vindos do POST.
  * Devolve [valores, erros].
  *
- * $variantId e o id da propria variacao ao editar, para que ela nao
+ * $variantId e o id da própria variação ao editar, para que ela não
  * seja acusada de conflitar consigo mesma.
  */
 function read_variant_input(int $productId, ?int $variantId): array
@@ -62,18 +62,18 @@ function read_variant_input(int $productId, ?int $variantId): array
     if ($values['color'] === '') {
         $errors[] = 'Informe a cor.';
     } elseif (mb_strlen($values['color']) > VARIANT_COLOR_MAX) {
-        $errors[] = 'A cor deve ter no maximo ' . VARIANT_COLOR_MAX . ' caracteres.';
+        $errors[] = 'A cor deve ter no máximo ' . VARIANT_COLOR_MAX . ' caracteres.';
     }
 
     // ---------- tamanho ----------
     if ($values['size'] === '') {
         $errors[] = 'Informe o tamanho.';
     } elseif (mb_strlen($values['size']) > VARIANT_SIZE_MAX) {
-        $errors[] = 'O tamanho deve ter no maximo ' . VARIANT_SIZE_MAX . ' caracteres.';
+        $errors[] = 'O tamanho deve ter no máximo ' . VARIANT_SIZE_MAX . ' caracteres.';
     }
 
     // ---------- estoque ----------
-    // Campo vazio vale zero. Qualquer outro texto que nao seja inteiro
+    // Campo vazio vale zero. Qualquer outro texto que não seja inteiro
     // devolve null em input_int e cai no erro abaixo.
     if ($values['stock'] === '') {
         $stock = 0;
@@ -82,14 +82,14 @@ function read_variant_input(int $productId, ?int $variantId): array
     }
 
     if ($stock === null) {
-        $errors[] = 'O estoque deve ser um numero inteiro.';
+        $errors[] = 'O estoque deve ser um número inteiro.';
         $stock = 0;
     } elseif ($stock < 0) {
         // A coluna e INT UNSIGNED: sem esta conferencia o MySQL recusaria
         // (modo estrito) ou gravaria zero calado (modo permissivo).
-        $errors[] = 'O estoque nao pode ser negativo.';
+        $errors[] = 'O estoque não pode ser negativo.';
     } elseif ($stock > VARIANT_STOCK_MAX) {
-        $errors[] = 'O estoque deve ser no maximo ' . VARIANT_STOCK_MAX . '.';
+        $errors[] = 'O estoque deve ser no máximo ' . VARIANT_STOCK_MAX . '.';
     }
 
     $values['stock'] = $stock;
@@ -97,21 +97,21 @@ function read_variant_input(int $productId, ?int $variantId): array
     // ---------- SKU ----------
     if ($values['sku'] !== '') {
         if (mb_strlen($values['sku']) > VARIANT_SKU_MAX) {
-            $errors[] = 'O SKU deve ter no maximo ' . VARIANT_SKU_MAX . ' caracteres.';
+            $errors[] = 'O SKU deve ter no máximo ' . VARIANT_SKU_MAX . ' caracteres.';
         } else {
-            // O SKU e unico na loja inteira, nao so dentro do produto.
+            // O SKU e único na loja inteira, não só dentro do produto.
             $dup = db()->prepare('SELECT id FROM product_variants WHERE sku = ? AND id <> ? LIMIT 1');
             $dup->execute([$values['sku'], $variantId ?? 0]);
 
             if ($dup->fetch() !== false) {
-                $errors[] = 'Ja existe uma variacao com o SKU "' . $values['sku'] . '".';
+                $errors[] = 'Já existe uma variação com o SKU "' . $values['sku'] . '".';
             }
         }
     }
 
     // ---------- combinacao repetida ----------
     // A collation utf8mb4_unicode_ci ignora caixa e acento, do mesmo jeito
-    // que a chave unica: "Preto"/"preto" contam como a mesma cor.
+    // que a chave única: "Preto"/"preto" contam como a mesma cor.
     if ($values['color'] !== '' && $values['size'] !== '') {
         $combo = db()->prepare(
             'SELECT id FROM product_variants
@@ -121,7 +121,7 @@ function read_variant_input(int $productId, ?int $variantId): array
 
         if ($combo->fetch() !== false) {
             $errors[] = sprintf(
-                'A combinacao %s / %s ja existe neste produto.',
+                'A combinacao %s / %s já existe neste produto.',
                 $values['color'],
                 $values['size']
             );
@@ -160,13 +160,13 @@ if (is_post()) {
                 ]);
 
                 flash('success', sprintf(
-                    'Variacao %s / %s criada.',
+                    'Variação %s / %s criada.',
                     $values['color'],
                     $values['size']
                 ));
             } catch (PDOException $e) {
                 if ($e->getCode() === '23000') {
-                    $errors[] = 'Essa combinacao ou esse SKU ja existe. Tente novamente.';
+                    $errors[] = 'Essa combinacao ou esse SKU já existe. Tente novamente.';
                 } else {
                     throw $e;
                 }
@@ -187,18 +187,18 @@ if (is_post()) {
         $variantId = input_int('variant_id');
 
         if ($variantId === null || $variantId < 1) {
-            flash('error', 'Variacao invalida.');
+            flash('error', 'Variação inválida.');
             redirect($redirect);
         }
 
-        // O product_id na condicao impede editar a variacao de outro produto.
+        // O product_id na condicao impede editar a variação de outro produto.
         $check = db()->prepare(
             'SELECT id FROM product_variants WHERE id = ? AND product_id = ? LIMIT 1'
         );
         $check->execute([$variantId, $productId]);
 
         if ($check->fetch() === false) {
-            flash('error', 'Variacao nao encontrada neste produto.');
+            flash('error', 'Variação não encontrada neste produto.');
             redirect($redirect);
         }
 
@@ -222,10 +222,10 @@ if (is_post()) {
                     $productId,
                 ]);
 
-                flash('success', 'Variacao atualizada.');
+                flash('success', 'Variação atualizada.');
             } catch (PDOException $e) {
                 if ($e->getCode() === '23000') {
-                    $errors[] = 'Essa combinacao ou esse SKU ja existe. Tente novamente.';
+                    $errors[] = 'Essa combinacao ou esse SKU já existe. Tente novamente.';
                 } else {
                     throw $e;
                 }
@@ -246,7 +246,7 @@ if (is_post()) {
         $variantId = input_int('variant_id');
 
         if ($variantId === null || $variantId < 1) {
-            flash('error', 'Variacao invalida.');
+            flash('error', 'Variação inválida.');
             redirect($redirect);
         }
 
@@ -254,8 +254,8 @@ if (is_post()) {
         $delete->execute([$variantId, $productId]);
 
         flash('success', $delete->rowCount() > 0
-            ? 'Variacao apagada.'
-            : 'Variacao nao encontrada neste produto.');
+            ? 'Variação apagada.'
+            : 'Variação não encontrada neste produto.');
 
         redirect($redirect);
     }
@@ -283,7 +283,7 @@ foreach ($variants as $variant) {
     $totalStock += (int) $variant['stock'];
 }
 
-// Sugestoes para os campos de cor e tamanho: o que ja foi digitado antes.
+// Sugestoes para os campos de cor e tamanho: o que já foi digitado antes.
 // Ajuda a manter a grafia padronizada sem tabelas de cores e tamanhos.
 $colorOptions = db()->query(
     'SELECT DISTINCT color FROM product_variants ORDER BY color ASC'
@@ -293,14 +293,14 @@ $sizeOptions = db()->query(
     'SELECT DISTINCT size FROM product_variants ORDER BY size_order ASC, size ASC'
 )->fetchAll(PDO::FETCH_COLUMN);
 
-$pageTitle = 'Variacoes do produto';
+$pageTitle = 'Variações do produto';
 $activeNav = 'produtos';
 
 require __DIR__ . '/includes/header.php';
 ?>
 
 <div class="page-head">
-    <h1 class="page-title">Variacoes: <?= e($product['name']) ?></h1>
+    <h1 class="page-title">Variações: <?= e($product['name']) ?></h1>
     <div class="actions">
         <a class="btn btn-ghost"
            href="<?= e(base_url('admin/product_images.php?product_id=' . $productId)) ?>">Imagens</a>
@@ -324,7 +324,7 @@ require __DIR__ . '/includes/header.php';
     <?= csrf_field() ?>
     <input type="hidden" name="action" value="create">
 
-    <span class="field-label">Nova variacao</span>
+    <span class="field-label">Nova variação</span>
 
     <div class="variant-fields">
         <label class="field">
@@ -368,14 +368,14 @@ require __DIR__ . '/includes/header.php';
 <?php if ($variants === []): ?>
 
     <p class="empty">
-        Nenhuma variacao cadastrada. Sem variacao o produto nao tem estoque
-        e nao pode ser adicionado ao carrinho.
+        Nenhuma variação cadastrada. Sem variação o produto não tem estoque
+        e não pode ser adicionado ao carrinho.
     </p>
 
 <?php else: ?>
 
     <p class="hint">
-        <?= e((string) count($variants)) ?> variacao(oes),
+        <?= e((string) count($variants)) ?> variação(oes),
         <?= e((string) $totalStock) ?> peca(s) em estoque no total.
         O estoque nunca baixa sozinho: ajuste aqui depois de confirmar a venda.
     </p>
@@ -427,7 +427,7 @@ require __DIR__ . '/includes/header.php';
                     <?php endif; ?>
 
                     <form method="post" action="<?= e($redirect) ?>"
-                          onsubmit="return confirm('Apagar esta variacao?');">
+                          onsubmit="return confirm('Apagar esta variação?');">
                         <?= csrf_field() ?>
                         <input type="hidden" name="action" value="delete">
                         <input type="hidden" name="variant_id" value="<?= e((string) $variant['id']) ?>">

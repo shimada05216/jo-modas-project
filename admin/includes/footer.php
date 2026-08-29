@@ -1,6 +1,6 @@
 <?php
 /**
- * Jo Modas - Rodape das paginas do painel
+ * Jo Modas - Rodape das páginas do painel
  */
 ?>
 </main>

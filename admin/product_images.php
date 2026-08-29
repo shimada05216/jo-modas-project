@@ -2,14 +2,14 @@
 /**
  * Jo Modas - Painel: imagens do produto
  *
- * As imagens ficam numa pagina propria porque so existem depois que o
+ * As imagens ficam numa página própria porque só existem depois que o
  * produto tem id: product_images.product_id e uma chave estrangeira.
  *
  * Regras de seguranca aplicadas ao envio:
  *   - o nome original do arquivo e descartado por completo;
  *   - o nome gravado e aleatorio e a extensao vem do tipo detectado;
  *   - o conteudo passa por getimagesize e finfo antes de ser aceito;
- *   - a pasta de uploads nao executa PHP (uploads/products/.htaccess).
+ *   - a pasta de uploads não executa PHP (uploads/products/.htaccess).
  */
 
 require_once __DIR__ . '/../includes/bootstrap.php';
@@ -21,7 +21,7 @@ const MAX_IMAGES_PER_PRODUCT = 12;
 $productId = input_int('product_id');
 
 if ($productId === null || $productId < 1) {
-    flash('error', 'Produto invalido.');
+    flash('error', 'Produto inválido.');
     redirect(base_url('admin/products.php'));
 }
 
@@ -30,16 +30,16 @@ $stmt->execute([$productId]);
 $product = $stmt->fetch();
 
 if ($product === false) {
-    flash('error', 'Produto nao encontrado.');
+    flash('error', 'Produto não encontrado.');
     redirect(base_url('admin/products.php'));
 }
 
 // ---------------------------------------------------------
 // Envio maior que post_max_size
 //
-// Quando o corpo da requisicao passa do limite do PHP, o proprio PHP
+// Quando o corpo da requisicao passa do limite do PHP, o próprio PHP
 // descarta tudo: $_POST e $_FILES chegam vazios. Sem este aviso, o
-// require_csrf() abaixo acusaria "requisicao invalida", escondendo a
+// require_csrf() abaixo acusaria "requisicao inválida", escondendo a
 // causa real, que e o tamanho do envio.
 // ---------------------------------------------------------
 
@@ -107,13 +107,13 @@ if (is_post()) {
                 continue;
             }
 
-            // O prefixo vem do nome do produto, ja vindo do banco, e passa
+            // O prefixo vem do nome do produto, já vindo do banco, e passa
             // por slugify dentro de save_uploaded_image. O nome enviado
             // pelo navegador nunca e usado.
             $filename = save_uploaded_image($file, mb_substr($product['name'], 0, 40));
 
             if ($filename === null) {
-                $errors[] = 'Nao foi possivel gravar uma das imagens.';
+                $errors[] = 'Não foi possível gravar uma das imagens.';
                 continue;
             }
 
@@ -129,15 +129,15 @@ if (is_post()) {
                     $nextOrder,
                 ]);
 
-                $hasMain = true; // a primeira imagem do produto ja vira a principal
+                $hasMain = true; // a primeira imagem do produto já vira a principal
                 $nextOrder++;
                 $current++;
                 $saved++;
             } catch (PDOException $e) {
-                // O registro nao entrou: o arquivo ja gravado viraria lixo
+                // O registro não entrou: o arquivo já gravado viraria lixo
                 // na pasta de uploads, entao sai junto.
                 delete_product_image_file($filename);
-                $errors[] = 'Nao foi possivel registrar uma das imagens.';
+                $errors[] = 'Não foi possível registrar uma das imagens.';
             }
         }
 
@@ -145,7 +145,7 @@ if (is_post()) {
             flash('success', $saved === 1 ? 'Imagem enviada.' : $saved . ' imagens enviadas.');
         } elseif ($errors === []) {
             // Todos os campos vieram vazios: nada gravado e nada a reclamar,
-            // mas o usuario precisa entender por que a pagina nao mudou.
+            // mas o usuário precisa entender por que a página não mudou.
             $errors[] = 'Escolha ao menos uma imagem.';
         }
 
@@ -159,7 +159,7 @@ if (is_post()) {
     // ---------------------------------------------------------
     // Definir a imagem principal
     //
-    // A ordem importa: product_images tem uma chave unica sobre a coluna
+    // A ordem importa: product_images tem uma chave única sobre a coluna
     // gerada main_marker, entao marcar a nova antes de desmarcar a antiga
     // seria recusado pelo banco.
     // ---------------------------------------------------------
@@ -167,7 +167,7 @@ if (is_post()) {
         $imageId = input_int('image_id');
 
         if ($imageId === null || $imageId < 1) {
-            flash('error', 'Imagem invalida.');
+            flash('error', 'Imagem inválida.');
             redirect($redirect);
         }
 
@@ -176,7 +176,7 @@ if (is_post()) {
         $check->execute([$imageId, $productId]);
 
         if ($check->fetch() === false) {
-            flash('error', 'Imagem nao encontrada neste produto.');
+            flash('error', 'Imagem não encontrada neste produto.');
             redirect($redirect);
         }
 
@@ -210,7 +210,7 @@ if (is_post()) {
         $imageId = input_int('image_id');
 
         if ($imageId === null || $imageId < 1) {
-            flash('error', 'Imagem invalida.');
+            flash('error', 'Imagem inválida.');
             redirect($redirect);
         }
 
@@ -222,7 +222,7 @@ if (is_post()) {
         $image = $find->fetch();
 
         if ($image === false) {
-            flash('error', 'Imagem nao encontrada neste produto.');
+            flash('error', 'Imagem não encontrada neste produto.');
             redirect($redirect);
         }
 
@@ -232,8 +232,8 @@ if (is_post()) {
             $delete = db()->prepare('DELETE FROM product_images WHERE id = ? AND product_id = ?');
             $delete->execute([$imageId, $productId]);
 
-            // Se a principal saiu, promove a proxima da fila para que o
-            // produto nao fique sem imagem de capa.
+            // Se a principal saiu, promove a próxima da fila para que o
+            // produto não fique sem imagem de capa.
             if ((int) $image['is_main'] === 1) {
                 $next = db()->prepare(
                     'SELECT id FROM product_images WHERE product_id = ?
@@ -255,7 +255,7 @@ if (is_post()) {
         }
 
         // Só depois do commit: se a transacao voltasse atras, o registro
-        // continuaria apontando para um arquivo que ja nao existiria.
+        // continuaria apontando para um arquivo que já não existiria.
         delete_product_image_file($image['filename']);
 
         flash('success', 'Imagem apagada.');
@@ -277,8 +277,8 @@ $imagesStmt = db()->prepare(
 $imagesStmt->execute([$productId]);
 $images = $imagesStmt->fetchAll();
 
-// O .htaccess da pasta de uploads e o que impede a execucao de codigo ali.
-// Alguns programas de FTP nao enviam arquivos ocultos, entao vale conferir.
+// O .htaccess da pasta de uploads e o que impede a execucao de código ali.
+// Alguns programas de FTP não enviam arquivos ocultos, entao vale conferir.
 $uploadGuard = is_file(UPLOAD_PATH . '/.htaccess');
 
 $pageTitle = 'Imagens do produto';
@@ -294,8 +294,8 @@ require __DIR__ . '/includes/header.php';
 
 <?php if (!$uploadGuard): ?>
     <div class="alert alert-error">
-        O arquivo <code>uploads/products/.htaccess</code> nao foi encontrado.
-        E ele que impede a execucao de codigo na pasta de imagens.
+        O arquivo <code>uploads/products/.htaccess</code> não foi encontrado.
+        E ele que impede a execucao de código na pasta de imagens.
         Envie-o para o servidor antes de continuar (muitos programas de FTP
         escondem arquivos que comecam com ponto).
     </div>
@@ -311,9 +311,9 @@ require __DIR__ . '/includes/header.php';
         <input type="file" name="images[]" multiple
                accept="image/jpeg,image/png,image/webp" required>
         <span class="field-hint">
-            JPG, PNG ou WEBP, ate <?= e((string) round(MAX_UPLOAD_SIZE / 1048576)) ?> MB cada.
+            JPG, PNG ou WEBP, até <?= e((string) round(MAX_UPLOAD_SIZE / 1048576)) ?> MB cada.
             Maximo de <?= e((string) MAX_IMAGES_PER_PRODUCT) ?> imagens por produto
-            (<?= e((string) count($images)) ?> ja enviadas).
+            (<?= e((string) count($images)) ?> já enviadas).
         </span>
     </label>
 

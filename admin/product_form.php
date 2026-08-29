@@ -5,8 +5,8 @@
  * Sem ?id  -> cria um produto novo
  * Com ?id  -> edita o produto informado
  *
- * Imagens e variacoes (cor/tamanho/estoque) nao entram aqui: sao a
- * proxima etapa. O estoque continua pertencendo a variacao.
+ * Imagens e variações (cor/tamanho/estoque) não entram aqui: são a
+ * próxima etapa. O estoque continua pertencendo a variação.
  */
 
 require_once __DIR__ . '/../includes/bootstrap.php';
@@ -19,7 +19,7 @@ const PRODUCT_SLUG_MAX        = 180;
 const PRODUCT_SKU_MAX         = 60;
 const PRODUCT_DESCRIPTION_MAX = 20000;
 
-// DECIMAL(10,2) guarda no maximo 99.999.999,99.
+// DECIMAL(10,2) guarda no máximo 99.999.999,99.
 const PRODUCT_PRICE_MAX = 99999999.99;
 
 $id      = input_int('id');
@@ -36,7 +36,7 @@ if ($id !== null && $id > 0) {
     $product = $stmt->fetch();
 
     if ($product === false) {
-        flash('error', 'Produto nao encontrado.');
+        flash('error', 'Produto não encontrado.');
         redirect(base_url('admin/products.php'));
     }
 
@@ -45,7 +45,7 @@ if ($id !== null && $id > 0) {
     $id = null;
 }
 
-// Sem categoria nao ha como gravar: products.category_id e NOT NULL.
+// Sem categoria não ha como gravar: products.category_id e NOT NULL.
 $categories = db()->query(
     'SELECT id, name, active FROM categories ORDER BY sort_order ASC, name ASC'
 )->fetchAll();
@@ -57,7 +57,7 @@ if ($categories === []) {
 
 // ---------------------------------------------------------
 // Valores do formulario.
-// Os precos ficam como texto para devolver ao usuario exatamente o que
+// Os precos ficam como texto para devolver ao usuário exatamente o que
 // ele digitou quando algum outro campo falha na validacao.
 // ---------------------------------------------------------
 
@@ -101,7 +101,7 @@ if (is_post()) {
         $check->execute([$values['category_id']]);
 
         if ($check->fetch() === false) {
-            $errors[] = 'A categoria escolhida nao existe mais.';
+            $errors[] = 'A categoria escolhida não existe mais.';
         }
     }
 
@@ -109,33 +109,33 @@ if (is_post()) {
     if ($values['name'] === '') {
         $errors[] = 'Informe o nome do produto.';
     } elseif (mb_strlen($values['name']) > PRODUCT_NAME_MAX) {
-        $errors[] = 'O nome deve ter no maximo ' . PRODUCT_NAME_MAX . ' caracteres.';
+        $errors[] = 'O nome deve ter no máximo ' . PRODUCT_NAME_MAX . ' caracteres.';
     }
 
-    // ---------- descricao ----------
+    // ---------- descrição ----------
     if (mb_strlen($values['description']) > PRODUCT_DESCRIPTION_MAX) {
-        $errors[] = 'A descricao deve ter no maximo ' . PRODUCT_DESCRIPTION_MAX . ' caracteres.';
+        $errors[] = 'A descrição deve ter no máximo ' . PRODUCT_DESCRIPTION_MAX . ' caracteres.';
     }
 
     // ---------- SKU ----------
-    // Vazio vira NULL: a chave unica aceita varios NULL, entao produtos
-    // sem codigo nao brigam entre si.
+    // Vazio vira NULL: a chave única aceita varios NULL, entao produtos
+    // sem código não brigam entre si.
     if ($values['sku'] !== '') {
         if (mb_strlen($values['sku']) > PRODUCT_SKU_MAX) {
-            $errors[] = 'O SKU deve ter no maximo ' . PRODUCT_SKU_MAX . ' caracteres.';
+            $errors[] = 'O SKU deve ter no máximo ' . PRODUCT_SKU_MAX . ' caracteres.';
         } else {
             $dup = db()->prepare('SELECT id FROM products WHERE sku = ? AND id <> ? LIMIT 1');
             $dup->execute([$values['sku'], $id ?? 0]);
 
             if ($dup->fetch() !== false) {
-                $errors[] = 'Ja existe um produto com esse SKU.';
+                $errors[] = 'Já existe um produto com esse SKU.';
             }
         }
     }
 
     // ---------- preco ----------
     // parse_price aceita tanto 1.234,56 quanto 1234.56 e devolve null
-    // para qualquer coisa que nao seja numero.
+    // para qualquer coisa que não seja número.
     $price = null;
 
     if ($values['price'] === '') {
@@ -144,11 +144,11 @@ if (is_post()) {
         $price = parse_price($values['price']);
 
         if ($price === null) {
-            $errors[] = 'Preco invalido. Use apenas numeros, por exemplo 199,90.';
+            $errors[] = 'Preco inválido. Use apenas números, por exemplo 199,90.';
         } elseif ($price <= 0) {
             $errors[] = 'O preco deve ser maior que zero.';
         } elseif ($price > PRODUCT_PRICE_MAX) {
-            $errors[] = 'O preco excede o maximo permitido (99.999.999,99).';
+            $errors[] = 'O preco excede o máximo permitido (99.999.999,99).';
         }
     }
 
@@ -159,14 +159,14 @@ if (is_post()) {
         $promoPrice = parse_price($values['promo_price']);
 
         if ($promoPrice === null) {
-            $errors[] = 'Preco promocional invalido. Use apenas numeros, por exemplo 149,90.';
+            $errors[] = 'Preco promocional inválido. Use apenas números, por exemplo 149,90.';
         } elseif ($promoPrice <= 0) {
-            $errors[] = 'O preco promocional deve ser maior que zero. Deixe em branco para remover a promocao.';
+            $errors[] = 'O preco promocional deve ser maior que zero. Deixe em branco para remover a promoção.';
         } elseif ($promoPrice > PRODUCT_PRICE_MAX) {
-            $errors[] = 'O preco promocional excede o maximo permitido.';
+            $errors[] = 'O preco promocional excede o máximo permitido.';
         } elseif ($price !== null && $promoPrice >= $price) {
             // Mesma regra da constraint chk_products_promo_price. Conferida
-            // aqui para virar mensagem, e nao erro de banco.
+            // aqui para virar mensagem, e não erro de banco.
             $errors[] = 'O preco promocional deve ser menor que o preco normal.';
         }
     }
@@ -194,7 +194,7 @@ if (is_post()) {
         $sku = $values['sku'] !== '' ? $values['sku'] : null;
         $description = $values['description'] !== '' ? $values['description'] : null;
 
-        // Os precos vao para o banco como texto com duas casas, e nao como
+        // Os precos vao para o banco como texto com duas casas, e não como
         // float. Assim o valor gravado na coluna DECIMAL e exatamente o que
         // foi validado, sem depender da conversao de ponto flutuante.
         $priceParam = number_format($price, 2, '.', '');
@@ -234,14 +234,14 @@ if (is_post()) {
             }
 
             if ($values['slug'] !== '' && $slug !== slugify($values['slug'])) {
-                $message .= ' O endereco ficou como "' . $slug . '", porque o desejado ja estava em uso.';
+                $message .= ' O endereço ficou como "' . $slug . '", porque o desejado já estava em uso.';
             }
 
             flash('success', $message);
             redirect(base_url('admin/products.php'));
         } catch (PDOException $e) {
             if ($e->getCode() === '23000') {
-                $errors[] = 'Ja existe um produto com esse endereco ou SKU. Tente novamente.';
+                $errors[] = 'Já existe um produto com esse endereço ou SKU. Tente novamente.';
             } else {
                 throw $e;
             }
@@ -262,7 +262,7 @@ require __DIR__ . '/includes/header.php';
             <a class="btn btn-ghost"
                href="<?= e(base_url('admin/product_images.php?product_id=' . (int) $id)) ?>">Imagens</a>
             <a class="btn btn-ghost"
-               href="<?= e(base_url('admin/product_variants.php?product_id=' . (int) $id)) ?>">Variacoes</a>
+               href="<?= e(base_url('admin/product_variants.php?product_id=' . (int) $id)) ?>">Variações</a>
         <?php endif; ?>
         <a class="btn btn-ghost" href="<?= e(base_url('admin/products.php')) ?>">Voltar</a>
     </div>
@@ -298,7 +298,7 @@ require __DIR__ . '/includes/header.php';
 
     <div class="field-row">
         <label class="field">
-            <span class="field-label">Endereco (slug)</span>
+            <span class="field-label">Endereço (slug)</span>
             <input type="text" name="slug" value="<?= e($values['slug']) ?>"
                    maxlength="<?= e((string) PRODUCT_SLUG_MAX) ?>"
                    placeholder="gerado a partir do nome">
@@ -309,12 +309,12 @@ require __DIR__ . '/includes/header.php';
             <input type="text" name="sku" value="<?= e($values['sku']) ?>"
                    maxlength="<?= e((string) PRODUCT_SKU_MAX) ?>"
                    placeholder="opcional">
-            <span class="field-hint">Codigo do produto. Cada cor/tamanho tera o seu.</span>
+            <span class="field-hint">Código do produto. Cada cor/tamanho tera o seu.</span>
         </label>
     </div>
 
     <label class="field">
-        <span class="field-label">Descricao</span>
+        <span class="field-label">Descrição</span>
         <textarea name="description" rows="6"><?= e($values['description']) ?></textarea>
     </label>
 
@@ -328,7 +328,7 @@ require __DIR__ . '/includes/header.php';
         <label class="field">
             <span class="field-label">Preco promocional</span>
             <input type="text" name="promo_price" value="<?= e($values['promo_price']) ?>"
-                   inputmode="decimal" placeholder="deixe em branco se nao houver">
+                   inputmode="decimal" placeholder="deixe em branco se não houver">
             <span class="field-hint">Precisa ser menor que o preco normal.</span>
         </label>
     </div>

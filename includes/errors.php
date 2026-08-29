@@ -2,9 +2,9 @@
 /**
  * Jo Modas - Tratamento de erros
  *
- * Este arquivo nao depende de nenhum outro do projeto, porque precisa
+ * Este arquivo não depende de nenhum outro do projeto, porque precisa
  * funcionar mesmo quando a falha acontece durante a inicializacao.
- * Por isso usa htmlspecialchars() diretamente, e nao o helper e().
+ * Por isso usa htmlspecialchars() diretamente, e não o helper e().
  *
  * Comportamento conforme DEBUG_MODE:
  *
@@ -14,12 +14,12 @@
  *     - a tela mostra tipo, mensagem, arquivo, linha e pilha de chamadas.
  *
  *   DEBUG_MODE = false  (producao)
- *     - avisos e notices vao para o log e a pagina continua;
+ *     - avisos e notices vao para o log e a página continua;
  *     - a tela mostra apenas um aviso generico, sem detalhes internos.
  */
 
 /**
- * Instala os tratadores. Deve ser chamado uma unica vez, pelo bootstrap.
+ * Instala os tratadores. Deve ser chamado uma única vez, pelo bootstrap.
  */
 function init_error_handling(): void
 {
@@ -41,12 +41,12 @@ function init_error_handling(): void
  * Recebe avisos, notices e deprecations do PHP.
  *
  * Em desenvolvimento converte tudo em excecao (falha rapido).
- * Em producao registra no log e deixa a pagina continuar.
+ * Em producao registra no log e deixa a página continuar.
  */
 function handle_php_error(int $severity, string $message, string $file = '', int $line = 0): bool
 {
     // Erro suprimido com @: error_reporting() fica zerado para este nivel.
-    // Devolver false entrega o caso ao tratamento padrao do PHP, que o ignora.
+    // Devolver false entrega o caso ao tratamento padrão do PHP, que o ignora.
     if (!(error_reporting() & $severity)) {
         return false;
     }
@@ -75,7 +75,7 @@ function handle_uncaught_exception(Throwable $e): void
 
     $detail = '';
 
-    // Percorre tambem as excecoes anteriores: a causa real de uma falha de
+    // Percorre também as excecoes anteriores: a causa real de uma falha de
     // conexao, por exemplo, fica na PDOException encadeada.
     for ($current = $e; $current !== null; $current = $current->getPrevious()) {
         $detail .= sprintf(
@@ -93,7 +93,7 @@ function handle_uncaught_exception(Throwable $e): void
 }
 
 /**
- * Captura erros fatais, que nao passam por handle_php_error().
+ * Captura erros fatais, que não passam por handle_php_error().
  */
 function handle_fatal_shutdown(): void
 {
@@ -126,15 +126,15 @@ function handle_fatal_shutdown(): void
 }
 
 /**
- * Desenha a pagina de erro.
+ * Desenha a página de erro.
  *
- * $detail so chega ao navegador quando DEBUG_MODE e true; em producao a
- * variavel e descartada, para nao vazar caminhos, consultas ou credenciais.
+ * $detail só chega ao navegador quando DEBUG_MODE e true; em producao a
+ * variavel e descartada, para não vazar caminhos, consultas ou credenciais.
  */
 function render_error_page(string $detail): void
 {
-    // exit() nao impede os shutdown functions de rodarem em seguida, entao
-    // sem esta trava um erro fatal poderia desenhar uma segunda pagina de
+    // exit() não impede os shutdown functions de rodarem em seguida, entao
+    // sem esta trava um erro fatal poderia desenhar uma segunda página de
     // erro emendada na primeira.
     static $alreadyRendered = false;
 
@@ -146,8 +146,8 @@ function render_error_page(string $detail): void
 
     $debug = defined('DEBUG_MODE') && DEBUG_MODE;
 
-    // Descarta saida ja bufferizada, para o erro nao aparecer no meio
-    // de uma pagina pela metade.
+    // Descarta saida já bufferizada, para o erro não aparecer no meio
+    // de uma página pela metade.
     while (ob_get_level() > 0) {
         ob_end_clean();
     }
@@ -175,7 +175,7 @@ function render_error_page(string $detail): void
            . 'em config/config.php. Deixe-o como false em producao.</p>';
     } else {
         echo '<h1>Ocorreu um erro</h1>'
-           . '<p>Nao foi possivel completar a operacao. Tente novamente em instantes.</p>'
+           . '<p>Não foi possível completar a operacao. Tente novamente em instantes.</p>'
            . '<p class="hint">O detalhe tecnico foi gravado no log do servidor.</p>';
     }
 

@@ -34,12 +34,12 @@ if ($slug !== '') {
 if ($product === false) {
     http_response_code(404);
 
-    $pageTitle = 'Produto nao encontrado';
+    $pageTitle = 'Produto não encontrado';
     require __DIR__ . '/includes/site_header.php';
 
     echo '<div class="empty-state">'
-       . '<h2>Produto nao encontrado</h2>'
-       . '<p>O produto que voce procura nao existe ou saiu do catalogo.</p>'
+       . '<h2>Produto não encontrado</h2>'
+       . '<p>O produto que você procura não existe ou saiu do catálogo.</p>'
        . '<a class="btn btn-solid" href="' . e(base_url('index.php')) . '">Voltar para a loja</a>'
        . '</div>';
 
@@ -116,8 +116,8 @@ $metaDesc   = $product['short_description'] !== null && $product['short_descript
 require __DIR__ . '/includes/site_header.php';
 ?>
 
-<nav class="crumb" aria-label="Voce esta em">
-    <a href="<?= e(base_url('index.php')) ?>">Inicio</a>
+<nav class="crumb" aria-label="Você está em">
+    <a href="<?= e(base_url('index.php')) ?>">Início</a>
     <span class="crumb-sep">/</span>
     <a href="<?= e(base_url('categoria.php?slug=' . rawurlencode($product['category_slug']))) ?>">
         <?= e($product['category_name']) ?>
@@ -172,7 +172,7 @@ require __DIR__ . '/includes/site_header.php';
 
         <?php if ($variants === []): ?>
 
-            <p class="unavailable">Este produto esta sem opcoes disponiveis no momento.</p>
+            <p class="unavailable">Este produto está sem opções disponíveis no momento.</p>
 
         <?php else: ?>
 
@@ -219,7 +219,7 @@ require __DIR__ . '/includes/site_header.php';
 
         <?php if ($product['description'] !== null && $product['description'] !== ''): ?>
             <div class="product-description">
-                <h2>Descricao</h2>
+                <h2>Descrição</h2>
                 <p><?= nl2br(e($product['description'])) ?></p>
             </div>
         <?php endif; ?>

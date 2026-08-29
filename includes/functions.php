@@ -18,7 +18,7 @@ function e(?string $value): string
 }
 
 /**
- * Formata um valor no padrao brasileiro: R$ 1.234,56
+ * Formata um valor no padrão brasileiro: R$ 1.234,56
  */
 function format_price($value): string
 {
@@ -81,7 +81,7 @@ function is_post(): bool
 }
 
 /**
- * Le um campo do POST como string, ja com trim.
+ * Le um campo do POST como string, já com trim.
  */
 function post(string $key, string $default = ''): string
 {
@@ -91,7 +91,7 @@ function post(string $key, string $default = ''): string
 }
 
 /**
- * Le um campo do GET como string, ja com trim.
+ * Le um campo do GET como string, já com trim.
  */
 function get(string $key, string $default = ''): string
 {
@@ -101,7 +101,7 @@ function get(string $key, string $default = ''): string
 }
 
 /**
- * Le um inteiro do POST/GET. Devolve $default quando ausente ou invalido.
+ * Le um inteiro do POST/GET. Devolve $default quando ausente ou inválido.
  */
 function input_int(string $key, ?int $default = null): ?int
 {
@@ -126,7 +126,7 @@ function to_bool_int($value): int
 
 /**
  * Converte texto de preco ("1.234,56" ou "1234.56") em float.
- * Devolve null para texto vazio ou invalido.
+ * Devolve null para texto vazio ou inválido.
  */
 function parse_price(string $value): ?float
 {
@@ -145,7 +145,7 @@ function parse_price(string $value): ?float
         $value = str_replace(',', '.', $value);
     } elseif (preg_match('/^-?\d{1,3}(\.\d{3})+$/', $value)) {
         // Sem virgula, mas com pontos separando grupos exatos de tres
-        // digitos: "1.234" e mil duzentos e trinta e quatro, nao 1,234.
+        // digitos: "1.234" e mil duzentos e trinta e quatro, não 1,234.
         // Sem esta regra o valor seria gravado como 1.23.
         $value = str_replace('.', '', $value);
     }
@@ -158,7 +158,7 @@ function parse_price(string $value): ?float
 // =========================================================
 
 /**
- * Gera um slug com apenas letras minusculas, numeros e hifens.
+ * Gera um slug com apenas letras minusculas, números e hifens.
  */
 function slugify(string $text): string
 {
@@ -179,7 +179,7 @@ function slugify(string $text): string
 }
 
 /**
- * Garante que o slug seja unico na tabela informada.
+ * Garante que o slug seja único na tabela informada.
  * $ignoreId permite editar um registro sem conflitar consigo mesmo.
  */
 function unique_slug(string $table, string $slug, ?int $ignoreId = null): string
@@ -187,7 +187,7 @@ function unique_slug(string $table, string $slug, ?int $ignoreId = null): string
     $allowed = ['categories', 'products'];
 
     if (!in_array($table, $allowed, true)) {
-        throw new InvalidArgumentException('Tabela invalida para slug: ' . $table);
+        throw new InvalidArgumentException('Tabela inválida para slug: ' . $table);
     }
 
     $base    = $slug;
@@ -225,7 +225,7 @@ function unique_slug(string $table, string $slug, ?int $ignoreId = null): string
 function validate_image_upload(array $file): ?string
 {
     if (!isset($file['error']) || is_array($file['error'])) {
-        return 'Envio de arquivo invalido.';
+        return 'Envio de arquivo inválido.';
     }
 
     switch ($file['error']) {
@@ -235,7 +235,7 @@ function validate_image_upload(array $file): ?string
             return 'Nenhum arquivo enviado.';
         case UPLOAD_ERR_INI_SIZE:
         case UPLOAD_ERR_FORM_SIZE:
-            return 'A imagem excede o tamanho maximo permitido.';
+            return 'A imagem excede o tamanho máximo permitido.';
         default:
             return 'Falha no envio do arquivo.';
     }
@@ -245,13 +245,13 @@ function validate_image_upload(array $file): ?string
     }
 
     if (!is_uploaded_file($file['tmp_name'])) {
-        return 'Arquivo temporario invalido.';
+        return 'Arquivo temporario inválido.';
     }
 
     $info = @getimagesize($file['tmp_name']);
 
     if ($info === false) {
-        return 'O arquivo enviado nao e uma imagem valida.';
+        return 'O arquivo enviado não é uma imagem válida.';
     }
 
     // Formatos aceitos, com o tipo MIME que cada um deve apresentar.
@@ -263,7 +263,7 @@ function validate_image_upload(array $file): ?string
     ];
 
     if (!isset($allowed[$info[2]])) {
-        return 'Formato nao permitido. Use JPG, PNG ou WEBP.';
+        return 'Formato não permitido. Use JPG, PNG ou WEBP.';
     }
 
     // Segunda opiniao, independente do cabecalho lido pelo getimagesize.
@@ -273,7 +273,7 @@ function validate_image_upload(array $file): ?string
         $mime = (new finfo(FILEINFO_MIME_TYPE))->file($file['tmp_name']);
 
         if ($mime !== $allowed[$info[2]]) {
-            return 'O conteudo do arquivo nao corresponde a um JPG, PNG ou WEBP.';
+            return 'O conteudo do arquivo não corresponde a um JPG, PNG ou WEBP.';
         }
     }
 
@@ -368,11 +368,11 @@ function normalize_files_array(array $files): array
 }
 
 // =========================================================
-// Configuracoes da loja (tabela settings)
+// Configurações da loja (tabela settings)
 // =========================================================
 
 /**
- * Carrega a tabela settings inteira, uma unica vez por requisicao.
+ * Carrega a tabela settings inteira, uma única vez por requisicao.
  * Sao poucas linhas, entao vale trazer tudo de uma vez em vez de
  * consultar o banco a cada chave.
  */
@@ -395,8 +395,8 @@ function settings_all(bool $refresh = false): array
 }
 
 /**
- * Grava uma configuracao. Cria a chave se ela ainda nao existir.
- * Recarrega o cache em seguida, para que a mesma requisicao ja leia
+ * Grava uma configuracao. Cria a chave se ela ainda não existir.
+ * Recarrega o cache em seguida, para que a mesma requisicao já leia
  * o valor novo.
  */
 function set_setting(string $key, ?string $value): void
@@ -429,8 +429,8 @@ function setting(string $key, ?string $default = null): ?string
 /**
  * Reduz o que o lojista digitou a somente digitos.
  *
- * O painel aceita "+55 42 99987-4363", que e como o numero costuma ser
- * escrito, mas o link wa.me nao aceita sinal, espaco nem hifen. Entra
+ * O painel aceita "+55 42 99987-4363", que e como o número costuma ser
+ * escrito, mas o link wa.me não aceita sinal, espaco nem hifen. Entra
  * "+55 42 99987-4363", sai "5542999874363".
  */
 function whatsapp_digits(string $value): string
@@ -439,7 +439,7 @@ function whatsapp_digits(string $value): string
 }
 
 /**
- * Poe um numero brasileiro no formato internacional que o wa.me exige.
+ * Poe um número brasileiro no formato internacional que o wa.me exige.
  *
  * Formatos aceitos:
  *   nacional      DDD + 8 (fixo) ou 9 (celular)   10 ou 11 digitos
@@ -447,18 +447,18 @@ function whatsapp_digits(string $value): string
  *
  * O que manda e o COMPRIMENTO, nunca o prefixo. O DDD 55 existe (Santa
  * Maria, RS), entao "55999874363" tem 11 digitos e comeca com 55 mas
- * ainda e um numero nacional: vira "5555999874363". Decidir pelo prefixo
+ * ainda e um número nacional: vira "5555999874363". Decidir pelo prefixo
  * geraria um link quebrado justamente para essa regiao.
  *
- * Devolve '' quando o valor nao e um numero brasileiro valido. Quem
- * chama trata o vazio como "sem numero", e nao como numero qualquer.
+ * Devolve '' quando o valor não e um número brasileiro válido. Quem
+ * chama trata o vazio como "sem número", e não como número qualquer.
  */
 function normalize_whatsapp_number(string $value): string
 {
     $digits = whatsapp_digits($value);
     $length = strlen($digits);
 
-    // Formato nacional: falta o codigo do pais, entao acrescenta.
+    // Formato nacional: falta o código do pais, entao acrescenta.
     if ($length === 10 || $length === 11) {
         $digits = '55' . $digits;
         $length = strlen($digits);
@@ -484,11 +484,11 @@ function normalize_whatsapp_number(string $value): string
 }
 
 /**
- * Numero da loja, pronto para montar o link do wa.me.
+ * Número da loja, pronto para montar o link do wa.me.
  *
- * Normaliza tambem na leitura, e nao so na gravacao: um valor antigo ou
+ * Normaliza também na leitura, e não só na gravacao: um valor antigo ou
  * editado direto no banco e corrigido ou descartado aqui, de modo que a
- * loja nunca chegue a montar uma URL invalida.
+ * loja nunca chegue a montar uma URL inválida.
  */
 function store_whatsapp_number(): string
 {
@@ -500,8 +500,8 @@ function store_whatsapp_number(): string
 // =========================================================
 
 /**
- * A requisicao veio da propria maquina?
- * Serve para liberar as paginas de instalacao no desenvolvimento sem
+ * A requisicao veio da própria maquina?
+ * Serve para liberar as páginas de instalacao no desenvolvimento sem
  * abri-las para a internet.
  */
 function is_local_request(): bool
@@ -516,11 +516,11 @@ function is_local_request(): bool
  *
  * Enquanto esses arquivos existirem no servidor, qualquer um pode
  * abri-los. O install.php chega a criar um administrador quando ainda
- * nao existe nenhum, o que entrega a loja inteira a quem passar por ali
+ * não existe nenhum, o que entrega a loja inteira a quem passar por ali
  * primeiro logo depois da publicacao.
  *
  * Passa quem acessa de localhost ou quem traz ?key= igual a INSTALL_KEY.
- * Para os demais a resposta e 404, e nao 403: nao confirma que o arquivo
+ * Para os demais a resposta e 404, e não 403: não confirma que o arquivo
  * existe.
  */
 function require_setup_access(): void
@@ -541,7 +541,7 @@ function require_setup_access(): void
 
     echo '<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">'
        . '<title>404</title></head><body><h1>404</h1>'
-       . '<p>Pagina nao encontrada.</p></body></html>';
+       . '<p>Página não encontrada.</p></body></html>';
 
     exit;
 }
@@ -553,7 +553,7 @@ function require_setup_access(): void
 /**
  * Categorias ativas, na ordem definida no painel.
  * Alimenta o menu do cabecalho e a lista do rodape, entao e consultada
- * uma unica vez por requisicao.
+ * uma única vez por requisicao.
  */
 function active_categories(): array
 {
@@ -573,7 +573,7 @@ function active_categories(): array
 }
 
 /**
- * Produtos para as vitrines, ja com a imagem principal e o estoque somado.
+ * Produtos para as vitrines, já com a imagem principal e o estoque somado.
  *
  * $filter aceita apenas os valores da lista abaixo. O trecho de SQL vem
  * dessa lista fixa, nunca do que chega pela URL.
@@ -593,7 +593,7 @@ function showcase_products(
     ];
 
     if (!isset($conditions[$filter])) {
-        throw new InvalidArgumentException('Filtro de vitrine invalido: ' . $filter);
+        throw new InvalidArgumentException('Filtro de vitrine inválido: ' . $filter);
     }
 
     $params = [];
@@ -602,8 +602,8 @@ function showcase_products(
         $params[] = (int) $categoryId;
     }
 
-    // LIMIT e OFFSET nao aceitam parametro em prepared statement, entao vao
-    // no texto da consulta. Sao inteiros ja limitados, nunca texto da URL.
+    // LIMIT e OFFSET não aceitam parametro em prepared statement, entao vao
+    // no texto da consulta. Sao inteiros já limitados, nunca texto da URL.
     $limit  = max(1, min(60, $limit));
     $offset = max(0, $offset);
 
@@ -619,8 +619,8 @@ function showcase_products(
                   WHERE pv.product_id = p.id AND pv.active = 1) AS total_stock
            FROM products p
            JOIN categories c ON c.id = p.category_id
-          -- c.active tambem entra: desativar uma categoria no painel deve
-          -- tirar os produtos dela da loja, e nao apenas some-la do menu.
+          -- c.active também entra: desativar uma categoria no painel deve
+          -- tirar os produtos dela da loja, e não apenas some-la do menu.
           WHERE p.active = 1 AND c.active = 1 AND ' . $conditions[$filter] . '
           ORDER BY p.created_at DESC, p.id DESC
           LIMIT ' . $limit . ' OFFSET ' . $offset
@@ -644,7 +644,7 @@ function count_category_products(int $categoryId): int
 }
 
 // =========================================================
-// Variacoes
+// Variações
 // =========================================================
 
 /**
@@ -652,14 +652,14 @@ function count_category_products(int $categoryId): int
  *
  * Sem isto a ordenacao seria alfabetica, que coloca GG antes de G e M
  * antes de P. O valor calculado aqui vai para product_variants.size_order,
- * entao o lojista nao precisa preencher esse campo a mao.
+ * entao o lojista não precisa preencher esse campo a mao.
  *
  * Tamanhos numericos (36, 38, 40) vem depois das letras, em ordem de
- * numero. Qualquer coisa desconhecida vai para o fim da lista.
+ * número. Qualquer coisa desconhecida vai para o fim da lista.
  */
 function size_sort_order(string $size): int
 {
-    // slugify tira acentos e baixa a caixa, entao "Único" chega como "unico".
+    // slugify tira acentos e baixa a caixa, entao "Único" chega como "único".
     $key = strtoupper(slugify($size));
 
     $known = [

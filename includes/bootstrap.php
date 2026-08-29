@@ -2,18 +2,18 @@
 /**
  * Jo Modas - Inicializacao da aplicacao
  *
- * Ponto de entrada unico. Toda pagina, publica ou do painel, comeca com:
+ * Ponto de entrada único. Toda página, publica ou do painel, comeca com:
  *
  *   require_once __DIR__ . '/../includes/bootstrap.php';
  *
- * Ordem de carga, que nao deve ser alterada:
+ * Ordem de carga, que não deve ser alterada:
  *   1. config/config.php    valores do ambiente
  *   2. includes/errors.php  tratadores de erro, antes de qualquer outra coisa
  *   3. config/database.php  funcao db()
  *   4. includes/functions.php  helpers
  *   5. includes/auth.php    sessao, CSRF e login
  *
- * A sessao NAO e iniciada aqui de proposito: as paginas publicas nao
+ * A sessao NAO e iniciada aqui de proposito: as páginas publicas não
  * precisam de cookie de sessao (o carrinho vive no localStorage).
  * Quem precisa chama start_session(), que e sob demanda.
  */
@@ -84,8 +84,8 @@ if (defined('APP_TIMEZONE')) {
 
 // ---------------------------------------------------------
 // 4. Tratamento de erros
-// Instalado cedo, para que as falhas dos passos seguintes ja
-// caiam na pagina de erro em vez de num aviso solto na tela.
+// Instalado cedo, para que as falhas dos passos seguintes já
+// caiam na página de erro em vez de num aviso solto na tela.
 // ---------------------------------------------------------
 
 require_once __DIR__ . '/errors.php';
@@ -94,7 +94,7 @@ init_error_handling();
 
 // ---------------------------------------------------------
 // 5. Banco, helpers e autenticacao
-// A conexao em si so e aberta na primeira chamada a db().
+// A conexao em si só e aberta na primeira chamada a db().
 // ---------------------------------------------------------
 
 require_once dirname(__DIR__) . '/config/database.php';
@@ -102,10 +102,10 @@ require_once __DIR__ . '/functions.php';
 require_once __DIR__ . '/auth.php';
 
 // ---------------------------------------------------------
-// 6. Cabecalhos padrao da resposta
+// 6. Cabecalhos padrão da resposta
 //
 // Content-Type repete o AddDefaultCharset do .htaccess, para o
-// caso de o projeto rodar atras de um servidor que nao le esse
+// caso de o projeto rodar atras de um servidor que não le esse
 // arquivo.
 //
 // X-Frame-Options impede que o painel seja carregado dentro de
@@ -125,9 +125,9 @@ if (!headers_sent()) {
 //
 // Sem TLS a senha do painel e o cookie de sessao atravessam a rede em
 // texto puro, e todo o cuidado com a sessao (id novo a cada login,
-// httponly, samesite) nao adianta nada: basta ler o cookie do trafego.
+// httponly, samesite) não adianta nada: basta ler o cookie do trafego.
 //
-// FORCE_HTTPS e opcional para nao quebrar o desenvolvimento local.
+// FORCE_HTTPS e opcional para não quebrar o desenvolvimento local.
 // ---------------------------------------------------------
 
 if (defined('FORCE_HTTPS') && FORCE_HTTPS) {

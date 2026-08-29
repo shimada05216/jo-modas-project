@@ -31,9 +31,9 @@ require __DIR__ . '/includes/site_header.php';
 
 <?php if ($whatsapp === '' || strlen($whatsapp) < 10): ?>
     <div class="notice notice-warn">
-        <strong>Envio de pedidos indisponivel.</strong>
-        A loja ainda nao cadastrou um numero de WhatsApp para atendimento.
-        Voce pode montar o carrinho, mas o pedido ainda nao pode ser enviado.
+        <strong>Envio de pedidos indisponível.</strong>
+        A loja ainda não cadastrou um número de WhatsApp para atendimento.
+        Você pode montar o carrinho, mas o pedido ainda não pode ser enviado.
     </div>
 <?php endif; ?>
 

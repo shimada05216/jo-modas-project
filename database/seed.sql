@@ -30,9 +30,9 @@ INSERT INTO `settings` (`setting_key`, `setting_value`) VALUES
 INSERT INTO `categories` (`name`, `slug`, `description`, `active`, `sort_order`) VALUES
 ('Vestidos',    'vestidos',    'Vestidos casuais e de festa', 1, 1),
 ('Blusas',      'blusas',      'Blusas e camisetas',          1, 2),
-('Calcas',      'calcas',      'Calcas jeans e alfaiataria',  1, 3),
+('Calças',      'calcas',      'Calças jeans e alfaiataria',  1, 3),
 ('Saias',       'saias',       'Saias curtas e longas',       1, 4),
-('Acessorios',  'acessorios',  'Bolsas, cintos e bijuterias', 1, 5);
+('Acessórios',  'acessorios',  'Bolsas, cintos e bijuterias', 1, 5);
 
 -- ------------------------------------------------------------
 -- Cores e tamanhos

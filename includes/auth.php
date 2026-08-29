@@ -15,7 +15,7 @@ require_once __DIR__ . '/functions.php';
 // =========================================================
 
 /**
- * Inicia a sessao uma unica vez, com cookie httponly e SameSite=Lax.
+ * Inicia a sessao uma única vez, com cookie httponly e SameSite=Lax.
  */
 function start_session(): void
 {
@@ -27,12 +27,12 @@ function start_session(): void
           || (($_SERVER['SERVER_PORT'] ?? '') === '443')
           || (strtolower((string) ($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '')) === 'https');
 
-    // Aceita apenas ids gerados pelo proprio PHP. Sem isto, um id inventado
-    // na URL ou num cookie forjado seria adotado como sessao valida, que e a
+    // Aceita apenas ids gerados pelo próprio PHP. Sem isto, um id inventado
+    // na URL ou num cookie forjado seria adotado como sessao válida, que e a
     // base do ataque de fixacao de sessao.
     ini_set('session.use_strict_mode', '1');
 
-    // O id de sessao nunca viaja na URL, so no cookie.
+    // O id de sessao nunca viaja na URL, só no cookie.
     ini_set('session.use_only_cookies', '1');
     ini_set('session.use_trans_sid', '0');
 
@@ -88,14 +88,14 @@ function csrf_valid($token): bool
 }
 
 /**
- * Interrompe a requisicao quando o token do POST nao confere.
+ * Interrompe a requisicao quando o token do POST não confere.
  * Deve ser a primeira linha de todo tratamento de POST do admin.
  */
 function require_csrf(): void
 {
     if (!csrf_valid($_POST['csrf_token'] ?? null)) {
         http_response_code(400);
-        die('Requisicao invalida ou sessao expirada. Volte, atualize a pagina e envie o formulario novamente.');
+        die('Requisicao inválida ou sessao expirada. Volte, atualize a página e envie o formulario novamente.');
     }
 }
 
@@ -104,7 +104,7 @@ function require_csrf(): void
 // =========================================================
 
 /**
- * Guarda uma mensagem para ser exibida na proxima pagina.
+ * Guarda uma mensagem para ser exibida na próxima página.
  * $type: success | error | info
  */
 function flash(string $type, string $message): void
@@ -131,12 +131,12 @@ function take_flashes(): array
 // =========================================================
 
 /**
- * Hash de reserva, usado so quando nao existe nenhum admin cadastrado.
+ * Hash de reserva, usado só quando não existe nenhum admin cadastrado.
  * E o hash publico de "password", nunca aceito como credencial: o
  * resultado da comparacao e sempre descartado.
  *
- * ATENCAO: nao use este valor como referencia de tempo no caso normal.
- * Ele foi gerado com custo 10, e o custo padrao do PHP mudou para 12 na
+ * ATENCAO: não use este valor como referencia de tempo no caso normal.
+ * Ele foi gerado com custo 10, e o custo padrão do PHP mudou para 12 na
  * versao 8.4. Comparar contra um hash de custo 10 enquanto os hashes
  * reais tem custo 12 faz a resposta de "e-mail inexistente" voltar em
  * cerca de um quarto do tempo, o que denuncia quais e-mails tem conta.
@@ -146,11 +146,11 @@ function take_flashes(): array
 const DUMMY_PASSWORD_HASH = '$2y$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy';
 
 /**
- * Devolve um hash para gastar tempo quando o e-mail nao existe.
+ * Devolve um hash para gastar tempo quando o e-mail não existe.
  *
  * Usa o hash de um administrador real, entao o custo e sempre o mesmo do
  * caminho "senha errada", sem depender de nenhuma constante escrita a
- * mao. Se o custo padrao do PHP mudar de novo, isto continua certo.
+ * mao. Se o custo padrão do PHP mudar de novo, isto continua certo.
  */
 function timing_reference_hash(): string
 {
@@ -166,10 +166,10 @@ function timing_reference_hash(): string
 //
 // Sem isto o painel aceita adivinhacoes de senha sem limite: com o
 // e-mail do administrador conhecido, uma lista de senhas comuns roda
-// ate acertar, e nada fica registrado.
+// até acertar, e nada fica registrado.
 //
 // Sao dois limites, de proposito:
-//   - por IP, baixo, que barra o caso comum de um script so;
+//   - por IP, baixo, que barra o caso comum de um script só;
 //   - por e-mail, bem mais alto, para pegar ataque distribuido sem
 //     entregar ao atacante uma forma facil de trancar o dono da loja
 //     de fora (bastaria errar a senha dele algumas vezes).
@@ -182,8 +182,8 @@ const LOGIN_KEEP_HOURS    = 24;
 
 /**
  * IP de quem esta tentando entrar.
- * Le somente REMOTE_ADDR: cabecalhos como X-Forwarded-For sao enviados
- * pelo proprio cliente e serviriam para escapar do limite.
+ * Le somente REMOTE_ADDR: cabecalhos como X-Forwarded-For são enviados
+ * pelo próprio cliente e serviriam para escapar do limite.
  */
 function login_client_ip(): string
 {
@@ -193,11 +193,11 @@ function login_client_ip(): string
 }
 
 /**
- * Minutos que faltam para liberar, ou 0 se nao ha bloqueio.
+ * Minutos que faltam para liberar, ou 0 se não ha bloqueio.
  */
 function login_lock_minutes(string $email): int
 {
-    // O tempo restante e calculado dentro do SQL, e nao no PHP. Comparar
+    // O tempo restante e calculado dentro do SQL, e não no PHP. Comparar
     // NOW() do banco com time() do PHP daria errado sempre que os dois
     // estivessem em fusos diferentes, que e o caso aqui: o PHP roda em
     // America/Sao_Paulo e o MariaDB no fuso do sistema.
@@ -233,7 +233,7 @@ function login_lock_minutes(string $email): int
 
 /**
  * Registra a tentativa. Todas entram, inclusive as bem-sucedidas,
- * para que o historico sirva de trilha de auditoria.
+ * para que o histórico sirva de trilha de auditoria.
  */
 function login_record_attempt(string $email, bool $successful): void
 {
@@ -245,7 +245,7 @@ function login_record_attempt(string $email, bool $successful): void
 
 /**
  * Depois de um login certo, zera o contador de quem acertou e limpa
- * o historico velho. Roda aqui porque e o momento raro e barato.
+ * o histórico velho. Roda aqui porque e o momento raro e barato.
  */
 function login_clear_attempts(string $email): void
 {
@@ -290,8 +290,8 @@ function admin_login(string $email, string $password): bool
         return false;
     }
 
-    // Se o custo padrao do PHP mudou desde que a senha foi criada, regrava
-    // o hash agora, que e o unico momento em que a senha esta disponivel.
+    // Se o custo padrão do PHP mudou desde que a senha foi criada, regrava
+    // o hash agora, que e o único momento em que a senha esta disponível.
     if (password_needs_rehash((string) $user['password_hash'], PASSWORD_DEFAULT)) {
         $update = db()->prepare('UPDATE admins SET password_hash = ? WHERE id = ?');
         $update->execute([password_hash($password, PASSWORD_DEFAULT), (int) $user['id']]);
@@ -339,7 +339,7 @@ function admin_logout(): void
 
 /**
  * Dados do administrador logado, ou null.
- * A cada requisicao consulta o banco uma unica vez, o que garante que
+ * A cada requisicao consulta o banco uma única vez, o que garante que
  * uma conta desativada perca o acesso na hora.
  */
 function current_admin(): ?array
@@ -360,8 +360,8 @@ function current_admin(): ?array
         return null;
     }
 
-    // Expiracao por inatividade. A sessao nao e destruida aqui de proposito:
-    // apagar so as chaves do admin deixa o flash da proxima pagina funcionar,
+    // Expiracao por inatividade. A sessao não e destruida aqui de proposito:
+    // apagar só as chaves do admin deixa o flash da próxima página funcionar,
     // e o session_regenerate_id troca o id sem reaproveitar o antigo.
     $timeout = defined('ADMIN_SESSION_TIMEOUT') ? (int) ADMIN_SESSION_TIMEOUT : 7200;
     $last    = (int) ($_SESSION['last_activity'] ?? 0);
@@ -391,7 +391,7 @@ function is_admin_logged_in(): bool
 }
 
 /**
- * Bloqueia a pagina para quem nao esta logado.
+ * Bloqueia a página para quem não esta logado.
  */
 function require_admin(): void
 {

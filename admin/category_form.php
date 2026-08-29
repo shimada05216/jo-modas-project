@@ -6,7 +6,7 @@
  * Com ?id  -> edita a categoria informada
  *
  * Toda a validacao acontece aqui, no servidor. Os atributos required e
- * maxlength do HTML servem so para avisar o usuario antes do envio: quem
+ * maxlength do HTML servem só para avisar o usuário antes do envio: quem
  * decide o que entra no banco e este arquivo.
  */
 
@@ -33,7 +33,7 @@ if ($id !== null && $id > 0) {
     $category = $stmt->fetch();
 
     if ($category === false) {
-        flash('error', 'Categoria nao encontrada.');
+        flash('error', 'Categoria não encontrada.');
         redirect(base_url('admin/categories.php'));
     }
 
@@ -45,7 +45,7 @@ if ($id !== null && $id > 0) {
 // ---------------------------------------------------------
 // Valores exibidos no formulario.
 // Numa requisicao GET vem do banco (ou vazios, na criacao).
-// Depois de um POST invalido, vem do que o usuario digitou.
+// Depois de um POST inválido, vem do que o usuário digitou.
 // ---------------------------------------------------------
 
 $values = [
@@ -66,26 +66,26 @@ if (is_post()) {
     $values['description'] = post('description');
     $values['active']      = to_bool_int($_POST['active'] ?? 0);
 
-    // Campo vazio vale zero. Se veio preenchido com algo que nao e inteiro,
+    // Campo vazio vale zero. Se veio preenchido com algo que não e inteiro,
     // input_int devolve null e a conferencia abaixo acusa o erro. Passar 0
-    // como padrao aqui esconderia justamente esse caso.
+    // como padrão aqui esconderia justamente esse caso.
     $values['sort_order'] = post('sort_order') === '' ? 0 : input_int('sort_order');
 
     // ---------- nome ----------
     if ($values['name'] === '') {
         $errors[] = 'Informe o nome da categoria.';
     } elseif (mb_strlen($values['name']) > CATEGORY_NAME_MAX) {
-        $errors[] = 'O nome deve ter no maximo ' . CATEGORY_NAME_MAX . ' caracteres.';
+        $errors[] = 'O nome deve ter no máximo ' . CATEGORY_NAME_MAX . ' caracteres.';
     }
 
-    // ---------- descricao ----------
+    // ---------- descrição ----------
     if (mb_strlen($values['description']) > CATEGORY_DESCRIPTION_MAX) {
-        $errors[] = 'A descricao deve ter no maximo ' . CATEGORY_DESCRIPTION_MAX . ' caracteres.';
+        $errors[] = 'A descrição deve ter no máximo ' . CATEGORY_DESCRIPTION_MAX . ' caracteres.';
     }
 
     // ---------- ordem ----------
     if ($values['sort_order'] === null) {
-        $errors[] = 'A ordem deve ser um numero inteiro.';
+        $errors[] = 'A ordem deve ser um número inteiro.';
         $values['sort_order'] = 0;
     } elseif ($values['sort_order'] < 0 || $values['sort_order'] > CATEGORY_SORT_MAX) {
         $errors[] = 'A ordem deve ficar entre 0 e ' . CATEGORY_SORT_MAX . '.';
@@ -93,19 +93,19 @@ if (is_post()) {
 
     // ---------- nome repetido ----------
     // A collation utf8mb4_unicode_ci faz esta busca ignorar maiusculas e
-    // acentos, do mesmo jeito que a chave unica uq_categories_name.
+    // acentos, do mesmo jeito que a chave única uq_categories_name.
     if ($values['name'] !== '') {
         $dup = db()->prepare('SELECT id FROM categories WHERE name = ? AND id <> ? LIMIT 1');
         $dup->execute([$values['name'], $id ?? 0]);
 
         if ($dup->fetch() !== false) {
-            $errors[] = 'Ja existe uma categoria com esse nome.';
+            $errors[] = 'Já existe uma categoria com esse nome.';
         }
     }
 
     // ---------- slug ----------
     // Slug vazio e gerado a partir do nome. unique_slug acrescenta -2, -3...
-    // caso o slug ja esteja em uso por outra categoria.
+    // caso o slug já esteja em uso por outra categoria.
     $slug = '';
 
     if ($errors === []) {
@@ -117,7 +117,7 @@ if (is_post()) {
             $slug = rtrim($slug, '-');
         }
 
-        // Rede de seguranca: um nome so com simbolos pode nao sobrar nada.
+        // Rede de seguranca: um nome só com simbolos pode não sobrar nada.
         if ($slug === '') {
             $slug = 'categoria';
         }
@@ -160,19 +160,19 @@ if (is_post()) {
                 $message = 'Categoria criada.';
             }
 
-            // Avisa quando o slug gravado nao foi o pedido, para o lojista
-            // nao procurar depois por um endereco que nao existe.
+            // Avisa quando o slug gravado não foi o pedido, para o lojista
+            // não procurar depois por um endereço que não existe.
             if ($values['slug'] !== '' && $slug !== slugify($values['slug'])) {
-                $message .= ' O endereco ficou como "' . $slug . '", porque o desejado ja estava em uso.';
+                $message .= ' O endereço ficou como "' . $slug . '", porque o desejado já estava em uso.';
             }
 
             flash('success', $message);
             redirect(base_url('admin/categories.php'));
         } catch (PDOException $e) {
             // Duas pessoas gravando ao mesmo tempo podem passar pelas
-            // conferencias acima e colidir na chave unica do banco.
+            // conferencias acima e colidir na chave única do banco.
             if ($e->getCode() === '23000') {
-                $errors[] = 'Ja existe uma categoria com esse nome ou endereco. Tente novamente.';
+                $errors[] = 'Já existe uma categoria com esse nome ou endereço. Tente novamente.';
             } else {
                 throw $e;
             }
@@ -207,17 +207,17 @@ require __DIR__ . '/includes/header.php';
     </label>
 
     <label class="field">
-        <span class="field-label">Endereco (slug)</span>
+        <span class="field-label">Endereço (slug)</span>
         <input type="text" name="slug" value="<?= e($values['slug']) ?>"
                maxlength="<?= e((string) CATEGORY_SLUG_MAX) ?>"
                placeholder="deixe em branco para gerar a partir do nome">
         <span class="field-hint">
-            Usado no endereco da categoria na loja. So letras, numeros e hifens.
+            Usado no endereço da categoria na loja. So letras, números e hifens.
         </span>
     </label>
 
     <label class="field">
-        <span class="field-label">Descricao</span>
+        <span class="field-label">Descrição</span>
         <textarea name="description" rows="4"
                   maxlength="<?= e((string) CATEGORY_DESCRIPTION_MAX) ?>"><?= e($values['description']) ?></textarea>
     </label>
@@ -226,7 +226,7 @@ require __DIR__ . '/includes/header.php';
         <span class="field-label">Ordem no menu</span>
         <input type="number" name="sort_order" value="<?= e((string) $values['sort_order']) ?>"
                min="0" max="<?= e((string) CATEGORY_SORT_MAX) ?>" step="1">
-        <span class="field-hint">Menor numero aparece primeiro.</span>
+        <span class="field-hint">Menor número aparece primeiro.</span>
     </label>
 
     <label class="field-check">

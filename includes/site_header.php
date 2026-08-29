@@ -34,7 +34,7 @@ $navItems   = active_categories();
 </head>
 <body class="site">
 
-<a class="skip-link" href="#conteudo">Ir para o conteudo</a>
+<a class="skip-link" href="#conteudo">Ir para o conteúdo</a>
 
 <p class="topbar">Atendimento e pedidos pelo WhatsApp</p>
 
@@ -68,7 +68,7 @@ $navItems   = active_categories();
         <ul class="hdr-nav-list">
             <li>
                 <a href="<?= e(base_url('index.php')) ?>"
-                   class="<?= $activeSlug === '' ? 'is-active' : '' ?>">Inicio</a>
+                   class="<?= $activeSlug === '' ? 'is-active' : '' ?>">Início</a>
             </li>
             <?php foreach ($navItems as $item): ?>
                 <li>

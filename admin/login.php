@@ -7,7 +7,7 @@ require_once __DIR__ . '/../includes/bootstrap.php';
 
 start_session();
 
-// Quem ja esta logado nao precisa ver esta tela.
+// Quem já esta logado não precisa ver esta tela.
 if (is_admin_logged_in()) {
     redirect(base_url('admin/index.php'));
 }
@@ -19,7 +19,7 @@ if (is_post()) {
     require_csrf();
 
     $email = post('email');
-    // A senha nao passa por trim: espacos podem fazer parte dela.
+    // A senha não passa por trim: espacos podem fazer parte dela.
     $password = isset($_POST['password']) && is_scalar($_POST['password'])
         ? (string) $_POST['password']
         : '';
@@ -27,7 +27,7 @@ if (is_post()) {
     if ($email === '' || $password === '') {
         $errors[] = 'Informe o e-mail e a senha.';
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        $errors[] = 'Informe um e-mail valido.';
+        $errors[] = 'Informe um e-mail válido.';
     } elseif (($lockMinutes = login_lock_minutes($email)) > 0) {
         // Bloqueio por excesso de tentativas. A conferencia vem antes de
         // admin_login para que nenhuma senha seja testada enquanto durar.
@@ -39,7 +39,7 @@ if (is_post()) {
     } elseif (admin_login($email, $password)) {
         redirect(base_url('admin/index.php'));
     } else {
-        // Mensagem generica: nao revela se o e-mail existe.
+        // Mensagem generica: não revela se o e-mail existe.
         $errors[] = 'E-mail ou senha incorretos.';
     }
 }
@@ -50,7 +50,7 @@ $flashes = take_flashes();
 $notices = [];
 
 if (get('saiu') === '1') {
-    $notices[] = 'Voce saiu do painel.';
+    $notices[] = 'Você saiu do painel.';
 }
 ?>
 <!DOCTYPE html>

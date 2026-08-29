@@ -2,8 +2,8 @@
 /**
  * Jo Modas - Painel: lista de produtos
  *
- * Trata tambem ativar/desativar e apagar, por POST com token CSRF,
- * seguindo o mesmo padrao POST/Redirect/GET das categorias.
+ * Trata também ativar/desativar e apagar, por POST com token CSRF,
+ * seguindo o mesmo padrão POST/Redirect/GET das categorias.
  */
 
 require_once __DIR__ . '/../includes/bootstrap.php';
@@ -17,7 +17,7 @@ if (is_post()) {
     $id     = input_int('id');
 
     if ($id === null || $id < 1) {
-        flash('error', 'Produto invalido.');
+        flash('error', 'Produto inválido.');
         redirect(base_url('admin/products.php'));
     }
 
@@ -26,7 +26,7 @@ if (is_post()) {
     $product = $stmt->fetch();
 
     if ($product === false) {
-        flash('error', 'Produto nao encontrado.');
+        flash('error', 'Produto não encontrado.');
         redirect(base_url('admin/products.php'));
     }
 
@@ -44,9 +44,9 @@ if (is_post()) {
     }
 
     if ($action === 'delete') {
-        // O ON DELETE CASCADE limpa os registros de imagens e variacoes,
-        // mas nao toca nos arquivos em disco. Por isso a lista de nomes e
-        // colhida antes: depois do DELETE ela nao existe mais.
+        // O ON DELETE CASCADE limpa os registros de imagens e variações,
+        // mas não toca nos arquivos em disco. Por isso a lista de nomes e
+        // colhida antes: depois do DELETE ela não existe mais.
         $imageStmt = db()->prepare('SELECT filename FROM product_images WHERE product_id = ?');
         $imageStmt->execute([$id]);
         $filenames = $imageStmt->fetchAll(PDO::FETCH_COLUMN);
@@ -122,8 +122,8 @@ require __DIR__ . '/includes/header.php';
                 <th>Preco</th>
                 <th class="col-num">Estoque</th>
                 <th>Marcadores</th>
-                <th>Situacao</th>
-                <th class="col-actions">Acoes</th>
+                <th>Situação</th>
+                <th class="col-actions">Ações</th>
             </tr>
         </thead>
         <tbody>
@@ -143,7 +143,7 @@ require __DIR__ . '/includes/header.php';
                 </td>
                 <td class="col-num">
                     <?php if ((int) $product['variant_count'] === 0): ?>
-                        <span class="badge badge-off">Sem variacao</span>
+                        <span class="badge badge-off">Sem variação</span>
                     <?php else: ?>
                         <?= e((string) $product['total_stock']) ?>
                     <?php endif; ?>
@@ -177,7 +177,7 @@ require __DIR__ . '/includes/header.php';
 
                         <a class="btn btn-sm btn-ghost"
                            href="<?= e(base_url('admin/product_variants.php?product_id=' . (int) $product['id'])) ?>">
-                            Variacoes (<?= e((string) $product['variant_count']) ?>)</a>
+                            Variações (<?= e((string) $product['variant_count']) ?>)</a>
 
                         <?php if ((int) $product['active'] === 1): ?>
                             <a class="btn btn-sm btn-ghost" target="_blank" rel="noopener"
@@ -194,7 +194,7 @@ require __DIR__ . '/includes/header.php';
                         </form>
 
                         <form method="post" action="<?= e(base_url('admin/products.php')) ?>"
-                              onsubmit="return confirm('Apagar este produto? Imagens e variacoes ligadas a ele tambem serao apagadas.');">
+                              onsubmit="return confirm('Apagar este produto? Imagens e variações ligadas a ele também serao apagadas.');">
                             <?= csrf_field() ?>
                             <input type="hidden" name="action" value="delete">
                             <input type="hidden" name="id" value="<?= e((string) $product['id']) ?>">

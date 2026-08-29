@@ -37,7 +37,7 @@ foreach ([$featured, $novelty, $best, $fallback] as $group) {
 $categories = active_categories();
 
 $pageTitle = 'Moda feminina';
-$metaDesc  = 'Jo Modas: vestidos, blusas e acessorios femininos. '
+$metaDesc  = 'Jo Modas: vestidos, blusas e acessórios femininos. '
            . 'Escolha cor e tamanho e finalize seu pedido pelo WhatsApp.';
 
 require __DIR__ . '/includes/site_header.php';
@@ -45,10 +45,10 @@ require __DIR__ . '/includes/site_header.php';
 
 <section class="hero<?= $heroImage === null ? ' hero-plain' : '' ?>">
     <div class="hero-text">
-        <span class="hero-kicker">Nova colecao</span>
-        <h1 class="hero-title">Pecas que<br>combinam com<em>o seu dia</em></h1>
+        <span class="hero-kicker">Nova coleção</span>
+        <h1 class="hero-title">Peças que<br>combinam com<em>o seu dia</em></h1>
         <p class="hero-sub">
-            Selecao de moda feminina escolhida peca a peca.
+            Seleção de moda feminina escolhida peça a peça.
             Escolha cor e tamanho e feche o pedido pelo WhatsApp.
         </p>
 
@@ -124,8 +124,8 @@ $section('Nossos produtos', 'Adicionados recentemente', $fallback);
 
 <?php if ($featured === [] && $novelty === [] && $best === [] && $fallback === []): ?>
     <div class="empty-state">
-        <h2>Vitrine em preparacao</h2>
-        <p>Ainda nao ha produtos publicados. Volte em breve.</p>
+        <h2>Vitrine em preparação</h2>
+        <p>Ainda não há produtos publicados. Volte em breve.</p>
     </div>
 <?php endif; ?>
 
