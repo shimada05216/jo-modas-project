@@ -44,4 +44,8 @@ require __DIR__ . '/includes/site_header.php';
     <p class="cart-loading">Carregando o carrinho...</p>
 </div>
 
+<p class="cart-continue">
+    <a href="<?= e(base_url('index.php')) ?>">Continuar comprando</a>
+</p>
+
 <?php require __DIR__ . '/includes/site_footer.php'; ?>

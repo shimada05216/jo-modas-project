@@ -946,3 +946,23 @@ body.menu-open .hdr-nav { transform: translateX(0); visibility: visible; }
     * { transition: none !important; animation: none !important; }
     .card-link:hover .card-media img { transform: none; }
 }
+
+/* Peça única: acao secundaria ao lado de "adicionar ao carrinho" */
+.btn-buy-now {
+    margin-top: 10px;
+    background: transparent;
+    border: 1px solid var(--tinta);
+    color: var(--tinta);
+}
+
+.btn-buy-now:hover:not(:disabled) { background: var(--tinta); color: #fff; }
+
+.btn-buy-now:disabled {
+    background: transparent;
+    border-color: var(--linha);
+    color: #a79ea1;
+}
+
+.cart-continue { margin-top: 22px; font-size: 14px; }
+.cart-continue a { color: var(--tinta-suave); }
+.cart-continue a:hover { color: var(--rosa); }

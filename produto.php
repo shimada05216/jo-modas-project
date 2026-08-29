@@ -96,6 +96,10 @@ $payload = [
     'slug'     => $product['slug'],
     'price'    => round($price, 2),
     'image'    => $images !== [] ? product_image_url($images[0]) : product_image_url(null),
+    // Numero e saudacao para o botao "comprar agora", que fala com o
+    // WhatsApp sem passar pelo carrinho.
+    'whatsapp' => store_whatsapp_number(),
+    'greeting' => whatsapp_greeting(),
     // Absoluta: este endereco entra na mensagem do WhatsApp e e aberto
     // fora do site, entao precisa levar host e esquema.
     'url'      => absolute_url('produto.php?slug=' . rawurlencode($product['slug'])),
@@ -209,6 +213,11 @@ require __DIR__ . '/includes/site_header.php';
 
                 <button type="submit" class="btn-buy" id="add-to-cart" disabled>
                     Adicionar ao carrinho
+                </button>
+
+                <?php /* Peça única: fala com o WhatsApp direto, sem passar pelo carrinho. */ ?>
+                <button type="button" class="btn-buy btn-buy-now" id="buy-now" disabled>
+                    Comprar agora
                 </button>
 
                 <p class="added-msg" id="added-msg" hidden>

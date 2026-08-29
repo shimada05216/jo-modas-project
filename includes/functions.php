@@ -538,6 +538,18 @@ function normalize_whatsapp_number(string $value): string
 }
 
 /**
+ * Saudação que abre a mensagem do pedido.
+ *
+ * Montada aqui, e não no JavaScript, porque leva acento e o PHP já e
+ * servido como UTF-8. Usada pelo carrinho e pelo "comprar agora" da
+ * página do produto, para as duas mensagens começarem igual.
+ */
+function whatsapp_greeting(): string
+{
+    return 'Olá, gostaria de fazer este pedido na ' . setting('store_name', 'Jo Modas') . ':';
+}
+
+/**
  * Número da loja, pronto para montar o link do wa.me.
  *
  * Normaliza também na leitura, e não só na gravacao: um valor antigo ou

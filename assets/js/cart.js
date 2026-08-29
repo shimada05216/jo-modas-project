@@ -96,7 +96,15 @@
         var stockLine = document.getElementById('stock-line');
         var qtyInput  = document.getElementById('qty');
         var addButton = document.getElementById('add-to-cart');
+        var buyNow    = document.getElementById('buy-now');
         var addedMsg  = document.getElementById('added-msg');
+
+        // Sem numero cadastrado o "comprar agora" nao tem para onde ir.
+        var storeNumber = (data.whatsapp || '');
+
+        if (buyNow && storeNumber.length < 10) {
+            buyNow.hidden = true;
+        }
 
         if (!form || !colorList || !sizeList) {
             return;
@@ -116,6 +124,8 @@
             qtyInput.value = 1;
             qtyInput.disabled = true;
             addButton.disabled = true;
+
+            if (buyNow) { buyNow.disabled = true; }
         }
 
         function renderSizes(color) {
@@ -162,6 +172,9 @@
             qtyInput.max = String(variant.stock);
             qtyInput.value = 1;
             addButton.disabled = false;
+
+            if (buyNow) { buyNow.disabled = false; }
+
             addedMsg.hidden = true;
         }
 
@@ -190,6 +203,44 @@
                 selectColor(button.dataset.color, button);
             });
         });
+
+        // "Comprar agora" / peça única: monta a mensagem so com este item e
+        // abre o WhatsApp, sem tocar no carrinho. Usa o mesmo buildMessage
+        // do carrinho, para as duas mensagens sairem no mesmo formato.
+        //
+        // Nada de estoque e alterado aqui, como em todo o resto do site.
+        if (buyNow) {
+            buyNow.addEventListener('click', function () {
+                if (!selectedVariant || selectedVariant.stock <= 0 || storeNumber.length < 10) {
+                    return;
+                }
+
+                var qty = parseInt(qtyInput.value, 10);
+
+                if (!Number.isInteger(qty) || qty < 1) {
+                    qty = 1;
+                }
+
+                if (qty > selectedVariant.stock) {
+                    qty = selectedVariant.stock;
+                }
+
+                var message = buildMessage([{
+                    available: true,
+                    qty: qty,
+                    name: data.name,
+                    color: selectedVariant.color,
+                    size: selectedVariant.size,
+                    price: data.price
+                }], data.greeting || 'Ola, gostaria de fazer este pedido:');
+
+                window.open(
+                    'https://wa.me/' + storeNumber + '?text=' + encodeURIComponent(message),
+                    '_blank',
+                    'noopener'
+                );
+            });
+        }
 
         qtyInput.addEventListener('input', function () {
             if (!selectedVariant) {
