@@ -102,7 +102,8 @@ foreach ($rows as $row) {
         'stock'     => (int) $row['stock'],
         'available' => $available,
         'image'     => product_image_url($row['image']),
-        'url'       => base_url('produto.php?slug=' . rawurlencode($row['slug'])),
+        // Absoluta: vai para a mensagem do WhatsApp, aberta fora do site.
+        'url'       => absolute_url('produto.php?slug=' . rawurlencode($row['slug'])),
     ];
 }
 

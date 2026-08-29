@@ -21,9 +21,18 @@ define('DB_CHARSET', 'utf8mb4');
 
 // ---------------------------------------------------------
 // URLs e caminhos
+//
 // BASE_URL: endereco publico da loja, SEM barra no final.
 //   Local    : http://localhost/jo-modas
 //   Hostinger: https://www.seudominio.com.br
+//
+// Os links internos NAO usam o host daqui: base_url() aproveita so a
+// PASTA (o "/jo-modas" do exemplo) e devolve endereco relativo, do tipo
+// "/produto.php". Assim a mesma instalacao responde por localhost, por
+// um tunel do Cloudflare e pelo dominio final sem precisar editar nada.
+//
+// O host so e usado por absolute_url(), nos links que entram na mensagem
+// do WhatsApp, e mesmo esses preferem o host da requisicao atual.
 // ---------------------------------------------------------
 define('BASE_URL', 'http://localhost/jo-modas');
 define('ROOT_PATH', dirname(__DIR__));

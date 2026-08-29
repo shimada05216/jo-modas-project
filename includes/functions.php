@@ -43,18 +43,72 @@ function effective_price(array $product): float
 // URLs
 // =========================================================
 
+/**
+ * Pasta em que o projeto esta publicado, sem barra no fim.
+ *
+ * Sai apenas o CAMINHO de BASE_URL, nunca o host:
+ *   http://localhost:8000          -> ''
+ *   http://localhost/jo-modas      -> '/jo-modas'
+ *   https://www.dominio.com.br     -> ''
+ */
+function base_path(): string
+{
+    static $cache = null;
+
+    if ($cache !== null) {
+        return $cache;
+    }
+
+    $path = (string) parse_url(BASE_URL, PHP_URL_PATH);
+
+    return $cache = rtrim($path, '/');
+}
+
+/**
+ * Endereco interno, sempre relativo a raiz do site.
+ *
+ * Devolve "/produto.php", e nao "http://localhost:8000/produto.php": o
+ * link passa a valer em qualquer host, entao a mesma instalacao funciona
+ * em localhost, atras de um tunel (Cloudflare) e no dominio final, sem
+ * nada escrito no codigo sobre o endereco.
+ */
 function base_url(string $path = ''): string
 {
-    return BASE_URL . '/' . ltrim($path, '/');
+    return base_path() . '/' . ltrim($path, '/');
 }
 
 function asset_url(string $path): string
 {
-    return BASE_URL . '/assets/' . ltrim($path, '/');
+    return base_url('assets/' . ltrim($path, '/'));
+}
+
+/**
+ * Endereco completo, com esquema e host, montado a partir da requisicao
+ * atual. Use so quando o link vai sair do site: hoje, apenas os links de
+ * produto dentro da mensagem do WhatsApp, que o cliente abre noutro
+ * aplicativo e precisa conseguir voltar.
+ */
+function absolute_url(string $path = ''): string
+{
+    $https = (!empty($_SERVER['HTTPS']) && strtolower((string) $_SERVER['HTTPS']) !== 'off')
+          || (($_SERVER['SERVER_PORT'] ?? '') === '443')
+          || (strtolower((string) ($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '')) === 'https');
+
+    $host = (string) ($_SERVER['HTTP_HOST'] ?? '');
+
+    // Sem host na requisicao (linha de comando, por exemplo), cai para o
+    // endereco configurado, que continua valendo em producao.
+    if ($host === '') {
+        return rtrim(BASE_URL, '/') . '/' . ltrim($path, '/');
+    }
+
+    return ($https ? 'https://' : 'http://') . $host . base_url($path);
 }
 
 /**
  * URL de uma imagem de produto. Sem arquivo, devolve o placeholder.
+ * Relativa, pelo mesmo motivo de base_url(): a imagem tem de carregar
+ * pelo host que o visitante esta usando.
  */
 function product_image_url(?string $filename): string
 {
@@ -62,7 +116,7 @@ function product_image_url(?string $filename): string
         return asset_url('images/placeholder.svg');
     }
 
-    return UPLOAD_URL . '/' . rawurlencode($filename);
+    return base_url('uploads/products/' . rawurlencode($filename));
 }
 
 function redirect(string $url): void

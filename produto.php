@@ -96,7 +96,9 @@ $payload = [
     'slug'     => $product['slug'],
     'price'    => round($price, 2),
     'image'    => $images !== [] ? product_image_url($images[0]) : product_image_url(null),
-    'url'      => base_url('produto.php?slug=' . rawurlencode($product['slug'])),
+    // Absoluta: este endereco entra na mensagem do WhatsApp e e aberto
+    // fora do site, entao precisa levar host e esquema.
+    'url'      => absolute_url('produto.php?slug=' . rawurlencode($product['slug'])),
     'variants' => array_map(static function (array $variant): array {
         return [
             'id'    => (int) $variant['id'],
