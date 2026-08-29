@@ -1,0 +1,9 @@
+# Normaliza fim de linha: LF no repositorio, sem diffs ruidosos
+# quando o mesmo projeto e editado no Windows e no servidor Linux.
+* text=auto eol=lf
+
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.ico binary

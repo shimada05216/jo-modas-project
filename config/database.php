@@ -31,12 +31,11 @@ function db(): PDO
     try {
         $pdo = new PDO($dsn, DB_USER, DB_PASS, $options);
     } catch (PDOException $e) {
-        if (DEBUG_MODE) {
-            die('Erro de conexao com o banco de dados: ' . $e->getMessage());
-        }
-        error_log('DB connection error: ' . $e->getMessage());
-        http_response_code(500);
-        die('Nao foi possivel conectar ao banco de dados.');
+        // Lanca em vez de encerrar o script: quem decide o que mostrar e o
+        // tratador de includes/errors.php, conforme DEBUG_MODE. A mensagem
+        // original da PDOException, que traz usuario e host, fica na excecao
+        // anterior e so aparece em desenvolvimento.
+        throw new RuntimeException('Nao foi possivel conectar ao banco de dados.', 0, $e);
     }
 
     return $pdo;

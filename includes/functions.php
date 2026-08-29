@@ -59,7 +59,7 @@ function asset_url(string $path): string
 function product_image_url(?string $filename): string
 {
     if ($filename === null || $filename === '') {
-        return asset_url('images/placeholder.png');
+        return asset_url('images/placeholder.svg');
     }
 
     return UPLOAD_URL . '/' . rawurlencode($filename);
@@ -136,12 +136,18 @@ function parse_price(string $value): ?float
         return null;
     }
 
-    $value = str_replace(['R$', ' '], '', $value);
+    // O espaco sem quebra (\xC2\xA0) aparece ao colar valores copiados da web.
+    $value = str_replace(['R$', ' ', "\xC2\xA0"], '', $value);
 
-    // Formato brasileiro: ponto de milhar, virgula decimal.
     if (strpos($value, ',') !== false) {
+        // Formato brasileiro completo: ponto de milhar, virgula decimal.
         $value = str_replace('.', '', $value);
         $value = str_replace(',', '.', $value);
+    } elseif (preg_match('/^-?\d{1,3}(\.\d{3})+$/', $value)) {
+        // Sem virgula, mas com pontos separando grupos exatos de tres
+        // digitos: "1.234" e mil duzentos e trinta e quatro, nao 1,234.
+        // Sem esta regra o valor seria gravado como 1.23.
+        $value = str_replace('.', '', $value);
     }
 
     return is_numeric($value) ? round((float) $value, 2) : null;
@@ -248,10 +254,33 @@ function validate_image_upload(array $file): ?string
         return 'O arquivo enviado nao e uma imagem valida.';
     }
 
-    $allowed = [IMAGETYPE_JPEG, IMAGETYPE_PNG, IMAGETYPE_WEBP];
+    // Formatos aceitos, com o tipo MIME que cada um deve apresentar.
+    // SVG fica de fora de proposito: e XML e pode carregar JavaScript.
+    $allowed = [
+        IMAGETYPE_JPEG => 'image/jpeg',
+        IMAGETYPE_PNG  => 'image/png',
+        IMAGETYPE_WEBP => 'image/webp',
+    ];
 
-    if (!in_array($info[2], $allowed, true)) {
+    if (!isset($allowed[$info[2]])) {
         return 'Formato nao permitido. Use JPG, PNG ou WEBP.';
+    }
+
+    // Segunda opiniao, independente do cabecalho lido pelo getimagesize.
+    // Um arquivo montado para enganar uma das duas checagens dificilmente
+    // engana as duas, que olham o conteudo por caminhos diferentes.
+    if (class_exists('finfo')) {
+        $mime = (new finfo(FILEINFO_MIME_TYPE))->file($file['tmp_name']);
+
+        if ($mime !== $allowed[$info[2]]) {
+            return 'O conteudo do arquivo nao corresponde a um JPG, PNG ou WEBP.';
+        }
+    }
+
+    // Limite de dimensoes: uma imagem de poucos KB pode declarar milhoes de
+    // pixels e derrubar quem tentar abri-la (decompression bomb).
+    if ((int) $info[0] * (int) $info[1] > 50000000) {
+        return 'A imagem tem dimensoes grandes demais.';
     }
 
     return null;
@@ -336,4 +365,250 @@ function normalize_files_array(array $files): array
     }
 
     return $result;
+}
+
+// =========================================================
+// Configuracoes da loja (tabela settings)
+// =========================================================
+
+/**
+ * Carrega a tabela settings inteira, uma unica vez por requisicao.
+ * Sao poucas linhas, entao vale trazer tudo de uma vez em vez de
+ * consultar o banco a cada chave.
+ */
+function settings_all(bool $refresh = false): array
+{
+    static $cache = null;
+
+    if ($cache !== null && !$refresh) {
+        return $cache;
+    }
+
+    $cache = [];
+    $stmt  = db()->query('SELECT setting_key, setting_value FROM settings');
+
+    foreach ($stmt as $row) {
+        $cache[$row['setting_key']] = $row['setting_value'];
+    }
+
+    return $cache;
+}
+
+/**
+ * Grava uma configuracao. Cria a chave se ela ainda nao existir.
+ * Recarrega o cache em seguida, para que a mesma requisicao ja leia
+ * o valor novo.
+ */
+function set_setting(string $key, ?string $value): void
+{
+    $stmt = db()->prepare(
+        'INSERT INTO settings (setting_key, setting_value) VALUES (?, ?)
+         ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)'
+    );
+    $stmt->execute([$key, $value]);
+
+    settings_all(true);
+}
+
+/**
+ * Le uma configuracao da loja, por exemplo whatsapp_number.
+ */
+function setting(string $key, ?string $default = null): ?string
+{
+    $all = settings_all();
+
+    return array_key_exists($key, $all) && $all[$key] !== null
+        ? $all[$key]
+        : $default;
+}
+
+// =========================================================
+// Paginas temporarias de instalacao
+// =========================================================
+
+/**
+ * A requisicao veio da propria maquina?
+ * Serve para liberar as paginas de instalacao no desenvolvimento sem
+ * abri-las para a internet.
+ */
+function is_local_request(): bool
+{
+    $ip = (string) ($_SERVER['REMOTE_ADDR'] ?? '');
+
+    return in_array($ip, ['127.0.0.1', '::1', '::ffff:127.0.0.1'], true);
+}
+
+/**
+ * Fecha install.php e test_connection.php para o mundo.
+ *
+ * Enquanto esses arquivos existirem no servidor, qualquer um pode
+ * abri-los. O install.php chega a criar um administrador quando ainda
+ * nao existe nenhum, o que entrega a loja inteira a quem passar por ali
+ * primeiro logo depois da publicacao.
+ *
+ * Passa quem acessa de localhost ou quem traz ?key= igual a INSTALL_KEY.
+ * Para os demais a resposta e 404, e nao 403: nao confirma que o arquivo
+ * existe.
+ */
+function require_setup_access(): void
+{
+    if (is_local_request()) {
+        return;
+    }
+
+    $expected = defined('INSTALL_KEY') ? (string) INSTALL_KEY : '';
+    $given    = get('key');
+
+    if ($expected !== '' && $given !== '' && hash_equals($expected, $given)) {
+        return;
+    }
+
+    http_response_code(404);
+    header('Content-Type: text/html; charset=UTF-8');
+
+    echo '<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">'
+       . '<title>404</title></head><body><h1>404</h1>'
+       . '<p>Pagina nao encontrada.</p></body></html>';
+
+    exit;
+}
+
+// =========================================================
+// Consultas da loja publica
+// =========================================================
+
+/**
+ * Categorias ativas, na ordem definida no painel.
+ * Alimenta o menu do cabecalho e a lista do rodape, entao e consultada
+ * uma unica vez por requisicao.
+ */
+function active_categories(): array
+{
+    static $cache = null;
+
+    if ($cache !== null) {
+        return $cache;
+    }
+
+    $cache = db()->query(
+        'SELECT id, name, slug FROM categories
+          WHERE active = 1
+          ORDER BY sort_order ASC, name ASC'
+    )->fetchAll();
+
+    return $cache;
+}
+
+/**
+ * Produtos para as vitrines, ja com a imagem principal e o estoque somado.
+ *
+ * $filter aceita apenas os valores da lista abaixo. O trecho de SQL vem
+ * dessa lista fixa, nunca do que chega pela URL.
+ */
+function showcase_products(
+    string $filter,
+    int $limit = 8,
+    ?int $categoryId = null,
+    int $offset = 0
+): array {
+    $conditions = [
+        'featured' => 'p.featured = 1',
+        'new'      => 'p.is_new = 1',
+        'best'     => 'p.best_seller = 1',
+        'recent'   => '1 = 1',
+        'category' => 'p.category_id = ?',
+    ];
+
+    if (!isset($conditions[$filter])) {
+        throw new InvalidArgumentException('Filtro de vitrine invalido: ' . $filter);
+    }
+
+    $params = [];
+
+    if ($filter === 'category') {
+        $params[] = (int) $categoryId;
+    }
+
+    // LIMIT e OFFSET nao aceitam parametro em prepared statement, entao vao
+    // no texto da consulta. Sao inteiros ja limitados, nunca texto da URL.
+    $limit  = max(1, min(60, $limit));
+    $offset = max(0, $offset);
+
+    $stmt = db()->prepare(
+        'SELECT p.id, p.name, p.slug, p.price, p.promo_price,
+                p.featured, p.is_new, p.best_seller,
+                c.name AS category_name, c.slug AS category_slug,
+                (SELECT pi.filename FROM product_images pi
+                  WHERE pi.product_id = p.id
+                  ORDER BY pi.is_main DESC, pi.sort_order ASC, pi.id ASC
+                  LIMIT 1) AS image,
+                (SELECT COALESCE(SUM(pv.stock), 0) FROM product_variants pv
+                  WHERE pv.product_id = p.id AND pv.active = 1) AS total_stock
+           FROM products p
+           JOIN categories c ON c.id = p.category_id
+          -- c.active tambem entra: desativar uma categoria no painel deve
+          -- tirar os produtos dela da loja, e nao apenas some-la do menu.
+          WHERE p.active = 1 AND c.active = 1 AND ' . $conditions[$filter] . '
+          ORDER BY p.created_at DESC, p.id DESC
+          LIMIT ' . $limit . ' OFFSET ' . $offset
+    );
+    $stmt->execute($params);
+
+    return $stmt->fetchAll();
+}
+
+/**
+ * Quantos produtos ativos a categoria tem. Usado na paginacao.
+ */
+function count_category_products(int $categoryId): int
+{
+    $stmt = db()->prepare(
+        'SELECT COUNT(*) FROM products WHERE category_id = ? AND active = 1'
+    );
+    $stmt->execute([$categoryId]);
+
+    return (int) $stmt->fetchColumn();
+}
+
+// =========================================================
+// Variacoes
+// =========================================================
+
+/**
+ * Traduz o nome do tamanho na ordem em que ele deve aparecer.
+ *
+ * Sem isto a ordenacao seria alfabetica, que coloca GG antes de G e M
+ * antes de P. O valor calculado aqui vai para product_variants.size_order,
+ * entao o lojista nao precisa preencher esse campo a mao.
+ *
+ * Tamanhos numericos (36, 38, 40) vem depois das letras, em ordem de
+ * numero. Qualquer coisa desconhecida vai para o fim da lista.
+ */
+function size_sort_order(string $size): int
+{
+    // slugify tira acentos e baixa a caixa, entao "Único" chega como "unico".
+    $key = strtoupper(slugify($size));
+
+    $known = [
+        'PP'    => 10,
+        'P'     => 20,
+        'M'     => 30,
+        'G'     => 40,
+        'GG'    => 50,
+        'XG'    => 60,
+        'XGG'   => 70,
+        'EG'    => 60,
+        'U'     => 80,
+        'UNICO' => 80,
+    ];
+
+    if (isset($known[$key])) {
+        return $known[$key];
+    }
+
+    if (ctype_digit($key)) {
+        return 100 + (int) $key;
+    }
+
+    return 900;
 }

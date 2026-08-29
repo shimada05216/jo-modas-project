@@ -83,3 +83,9 @@ $RECYCLE.BIN/
 .ftpconfig
 sftp-config.json
 /deploy/
+
+# ------------------------------------------------------------
+# Arte de referencia da marca (mockups, logos em PNG)
+# Fica so na maquina: nao e codigo e pesa 2,5 MB.
+# ------------------------------------------------------------
+/assets/images/example/
