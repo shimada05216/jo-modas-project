@@ -697,6 +697,20 @@ function showcase_products(
 }
 
 /**
+ * Quantos produtos estão publicados na loja inteira.
+ * Usado pela paginação da home, que agora é o próprio catálogo.
+ */
+function count_active_products(): int
+{
+    return (int) db()->query(
+        'SELECT COUNT(*)
+           FROM products p
+           JOIN categories c ON c.id = p.category_id
+          WHERE p.active = 1 AND c.active = 1'
+    )->fetchColumn();
+}
+
+/**
  * Quantos produtos ativos a categoria tem. Usado na paginacao.
  */
 function count_category_products(int $categoryId): int

@@ -5,8 +5,13 @@
  * Espera a variavel $card, uma linha vinda de showcase_products().
  * Usado pela home e pela listagem de categoria.
  *
- * O cartao leva para a pagina do produto: a escolha de cor e tamanho
- * acontece la, porque e a variacao que tem estoque.
+ * O botao "Comprar" leva para a pagina do produto, e nao adiciona ao
+ * carrinho direto: o que se vende e a combinacao cor + tamanho, e essa
+ * escolha so existe la. Adicionar do cartao criaria um item sem
+ * variacao definida.
+ *
+ * A imagem e o elemento principal do cartao; tocar nela, no nome ou no
+ * preco tambem abre o produto.
  */
 
 $cardPrice    = effective_price($card);
@@ -18,19 +23,40 @@ $cardUrl      = base_url('produto.php?slug=' . rawurlencode($card['slug']));
     <a class="card-link" href="<?= e($cardUrl) ?>">
         <div class="card-media">
             <img src="<?= e(product_image_url($card['image'])) ?>"
-                 alt="<?= e($card['name']) ?>" loading="lazy">
+                 alt="<?= e($card['name']) ?>" loading="lazy" decoding="async"
+                 width="600" height="800">
 
-            <div class="card-flags">
-                <?php if ($cardHasPromo): ?>
-                    <span class="flag flag-promo">Promoção</span>
-                <?php endif; ?>
-                <?php if ((int) $card['is_new'] === 1): ?>
-                    <span class="flag">Novidade</span>
-                <?php endif; ?>
-                <?php if ((int) $card['best_seller'] === 1): ?>
-                    <span class="flag">Mais vendido</span>
-                <?php endif; ?>
-            </div>
+            <?php
+            // Selos so aparecem quando o marcador correspondente esta
+            // ligado no painel. Nada e fixo no codigo.
+            //
+            // No maximo dois por cartao: com os quatro marcadores ligados
+            // a pilha de etiquetas cobria a foto, que e justamente o que
+            // vende. A ordem abaixo e a prioridade.
+            $cardFlags = [];
+
+            if ($cardHasPromo) {
+                $cardFlags[] = ['Promoção', 'flag flag-promo'];
+            }
+            if ((int) $card['is_new'] === 1) {
+                $cardFlags[] = ['Novo', 'flag'];
+            }
+            if ((int) $card['best_seller'] === 1) {
+                $cardFlags[] = ['Mais vendido', 'flag'];
+            }
+            if ((int) $card['featured'] === 1) {
+                $cardFlags[] = ['Destaque', 'flag'];
+            }
+
+            $cardFlags = array_slice($cardFlags, 0, 2);
+            ?>
+            <?php if ($cardFlags !== []): ?>
+                <div class="card-flags">
+                    <?php foreach ($cardFlags as [$flagLabel, $flagClass]): ?>
+                        <span class="<?= e($flagClass) ?>"><?= e($flagLabel) ?></span>
+                    <?php endforeach; ?>
+                </div>
+            <?php endif; ?>
 
             <?php if ($cardSoldOut): ?>
                 <span class="card-out">Esgotado</span>
@@ -38,8 +64,7 @@ $cardUrl      = base_url('produto.php?slug=' . rawurlencode($card['slug']));
         </div>
 
         <div class="card-body">
-            <span class="card-cat"><?= e($card['category_name']) ?></span>
-            <h3 class="card-name"><?= e($card['name']) ?></h3>
+            <h2 class="card-name"><?= e($card['name']) ?></h2>
 
             <p class="card-price">
                 <?php if ($cardHasPromo): ?>
@@ -49,4 +74,12 @@ $cardUrl      = base_url('produto.php?slug=' . rawurlencode($card['slug']));
             </p>
         </div>
     </a>
+
+    <?php // Fora do <a> acima: um link nao pode conter outro link. ?>
+    <?php if ($cardSoldOut): ?>
+        <span class="card-buy is-disabled" aria-disabled="true">Esgotado</span>
+    <?php else: ?>
+        <a class="card-buy" href="<?= e($cardUrl) ?>"
+           aria-label="Comprar <?= e($card['name']) ?>">Comprar</a>
+    <?php endif; ?>
 </article>

@@ -10,6 +10,10 @@
  * O menu vem da tabela categories: cadastrar uma categoria no painel ja
  * a coloca aqui, sem mexer em codigo.
  *
+ * Cabecalho compacto de proposito: a maior parte do trafego e de celular,
+ * entao a barra ocupa uma linha so e as categorias ficam num submenu, em
+ * vez de uma faixa larga empurrando os produtos para baixo da dobra.
+ *
  * Nao abre sessao: o carrinho vive no localStorage do navegador.
  */
 
@@ -36,8 +40,6 @@ $navItems   = active_categories();
 
 <a class="skip-link" href="#conteudo">Ir para o conteúdo</a>
 
-<p class="topbar">Atendimento e pedidos pelo WhatsApp</p>
-
 <header class="hdr">
     <div class="hdr-bar">
         <button type="button" class="hdr-burger" id="menu-toggle"
@@ -59,25 +61,51 @@ $navItems   = active_categories();
         </a>
     </div>
 
-    <nav class="hdr-nav" id="menu-drawer" aria-label="Categorias">
-        <div class="hdr-nav-head">
-            <span>Categorias</span>
-            <button type="button" class="hdr-close" id="menu-close" aria-label="Fechar menu">&times;</button>
+    <?php
+    /**
+     * A mesma lista serve de gaveta no celular e de barra com submenu no
+     * desktop. No celular as categorias aparecem ja abertas, para nao
+     * exigir dois toques; no desktop viram um menu suspenso.
+     */
+    ?>
+    <nav class="nav" id="menu-drawer" aria-label="Categorias">
+        <div class="nav-head">
+            <span>Menu</span>
+            <button type="button" class="nav-close" id="menu-close" aria-label="Fechar menu">&times;</button>
         </div>
 
-        <ul class="hdr-nav-list">
+        <ul class="nav-list">
             <li>
                 <a href="<?= e(base_url('index.php')) ?>"
-                   class="<?= $activeSlug === '' ? 'is-active' : '' ?>">Início</a>
+                   class="nav-link <?= $activeSlug === '' ? 'is-active' : '' ?>">Início</a>
             </li>
-            <?php foreach ($navItems as $item): ?>
-                <li>
-                    <a href="<?= e(base_url('categoria.php?slug=' . rawurlencode($item['slug']))) ?>"
-                       class="<?= $activeSlug === $item['slug'] ? 'is-active' : '' ?>">
-                        <?= e($item['name']) ?>
-                    </a>
+
+            <?php if ($navItems !== []): ?>
+                <li class="nav-drop">
+                    <button type="button" class="nav-link nav-drop-toggle" id="cat-toggle"
+                            aria-expanded="false" aria-controls="cat-submenu">
+                        Categorias
+                        <svg class="nav-chevron" viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="m7 10 5 5 5-5"/>
+                        </svg>
+                    </button>
+
+                    <ul class="nav-sub" id="cat-submenu">
+                        <?php foreach ($navItems as $item): ?>
+                            <li>
+                                <a href="<?= e(base_url('categoria.php?slug=' . rawurlencode($item['slug']))) ?>"
+                                   class="<?= $activeSlug === $item['slug'] ? 'is-active' : '' ?>">
+                                    <?= e($item['name']) ?>
+                                </a>
+                            </li>
+                        <?php endforeach; ?>
+                    </ul>
                 </li>
-            <?php endforeach; ?>
+            <?php endif; ?>
+
+            <li>
+                <a href="<?= e(base_url('carrinho.php')) ?>" class="nav-link">Carrinho</a>
+            </li>
         </ul>
     </nav>
 </header>
