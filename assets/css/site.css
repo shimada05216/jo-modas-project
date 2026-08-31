@@ -517,9 +517,10 @@ body.menu-open .nav { transform: translateX(0); visibility: visible; }
     color: var(--tinta-suave);
     font-size: 12px;
     text-decoration: line-through;
+    white-space: nowrap;
 }
 
-.price-now { font-size: 16px; font-weight: 700; color: var(--rosa); }
+.price-now { font-size: 16px; font-weight: 700; color: var(--rosa); white-space: nowrap; }
 
 /* Alvo de toque confortavel: 44px de altura minima. */
 .card-buy {
@@ -1068,10 +1069,6 @@ body.menu-open .nav { transform: translateX(0); visibility: visible; }
     .product { grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: 44px; }
     .product-info { position: sticky; top: 96px; }
     .btn-buy { max-width: 340px; }
-}
-
-@media (min-width: 1280px) {
-    .grid { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 24px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
