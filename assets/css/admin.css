@@ -638,3 +638,5 @@ td.col-num { text-align: center; }
     .variant-line .field-stock input { max-width: 110px; }
     .variant-line-actions { align-self: end; padding-bottom: 2px; }
 }
+
+.form-section-standalone { margin: 26px 0 14px; border: 0; padding: 0; }

@@ -20,7 +20,9 @@ $values = [
 
 $errors = [];
 
-if (is_post()) {
+// Duas areas na mesma tela. O campo "form" diz qual delas foi enviada,
+// para uma nao apagar os valores da outra.
+if (is_post() && post('form') === 'store') {
     require_csrf();
 
     $values['store_name'] = post('store_name');
@@ -74,6 +76,108 @@ if (is_post()) {
     }
 }
 
+// =========================================================
+// Dados de acesso do administrador
+//
+// Ficam na tabela admins, e nunca em settings: settings guarda
+// configuracao da loja, nao credencial.
+// =========================================================
+
+$admin        = current_admin();
+$accountValues = ['name' => $admin['name'], 'email' => $admin['email']];
+$accountErrors = [];
+
+if (is_post() && post('form') === 'account') {
+    require_csrf();
+
+    $accountValues['name']  = post('name');
+    $accountValues['email'] = post('email');
+
+    // Senhas nao passam por trim: espacos podem fazer parte delas.
+    $current = isset($_POST['current_password']) && is_scalar($_POST['current_password'])
+        ? (string) $_POST['current_password'] : '';
+    $newPass = isset($_POST['new_password']) && is_scalar($_POST['new_password'])
+        ? (string) $_POST['new_password'] : '';
+    $confirm = isset($_POST['confirm_password']) && is_scalar($_POST['confirm_password'])
+        ? (string) $_POST['confirm_password'] : '';
+
+    $wantsPassword = $newPass !== '' || $confirm !== '';
+
+    if ($accountValues['name'] === '') {
+        $accountErrors[] = 'Informe o nome.';
+    } elseif (mb_strlen($accountValues['name']) > 100) {
+        $accountErrors[] = 'O nome deve ter no máximo 100 caracteres.';
+    }
+
+    if (!filter_var($accountValues['email'], FILTER_VALIDATE_EMAIL)) {
+        $accountErrors[] = 'Informe um e-mail válido.';
+    } elseif (mb_strlen($accountValues['email']) > 190) {
+        $accountErrors[] = 'O e-mail é longo demais.';
+    } else {
+        $dup = db()->prepare('SELECT id FROM admins WHERE email = ? AND id <> ? LIMIT 1');
+        $dup->execute([$accountValues['email'], (int) $admin['id']]);
+
+        if ($dup->fetch() !== false) {
+            $accountErrors[] = 'Esse e-mail já pertence a outro administrador.';
+        }
+    }
+
+    if ($wantsPassword) {
+        if (strlen($newPass) < 10) {
+            $accountErrors[] = 'A nova senha precisa ter pelo menos 10 caracteres.';
+        }
+
+        if ($newPass !== $confirm) {
+            $accountErrors[] = 'A confirmação não confere com a nova senha.';
+        }
+    }
+
+    // A senha atual e exigida para QUALQUER alteracao destes dados: e o
+    // que impede alguem que pegou a sessao aberta de trocar o e-mail e
+    // a senha e tomar a conta.
+    if ($accountErrors === []) {
+        $check = db()->prepare('SELECT password_hash FROM admins WHERE id = ? LIMIT 1');
+        $check->execute([(int) $admin['id']]);
+        $storedHash = (string) $check->fetchColumn();
+
+        if ($current === '' || !password_verify($current, $storedHash)) {
+            $accountErrors[] = 'Senha atual incorreta.';
+        }
+    }
+
+    if ($accountErrors === []) {
+        if ($wantsPassword) {
+            $save = db()->prepare(
+                'UPDATE admins SET name = ?, email = ?, password_hash = ? WHERE id = ?'
+            );
+            $save->execute([
+                $accountValues['name'],
+                $accountValues['email'],
+                password_hash($newPass, PASSWORD_DEFAULT),
+                (int) $admin['id'],
+            ]);
+        } else {
+            $save = db()->prepare('UPDATE admins SET name = ?, email = ? WHERE id = ?');
+            $save->execute([
+                $accountValues['name'],
+                $accountValues['email'],
+                (int) $admin['id'],
+            ]);
+        }
+
+        // A sessao continua valendo, mas com id novo: se a senha foi
+        // trocada porque alguem mais a conhecia, a sessao antiga morre.
+        session_regenerate_id(true);
+        $_SESSION['admin_name'] = $accountValues['name'];
+
+        flash('success', $wantsPassword
+            ? 'Dados de acesso atualizados. Use a nova senha no próximo login.'
+            : 'Dados de acesso atualizados.');
+
+        redirect(base_url('admin/settings.php'));
+    }
+}
+
 $pageTitle = 'Configurações';
 $activeNav = 'configuracoes';
 
@@ -90,6 +194,9 @@ require __DIR__ . '/includes/header.php';
 
 <form method="post" class="form-card" action="<?= e(base_url('admin/settings.php')) ?>" novalidate>
     <?= csrf_field() ?>
+    <input type="hidden" name="form" value="store">
+
+    <h2 class="form-section">Loja</h2>
 
     <label class="field">
         <span class="field-label">Nome da loja *</span>
@@ -128,5 +235,55 @@ require __DIR__ . '/includes/header.php';
         &mdash; abra para confirmar que leva a conta certa.
     </p>
 <?php endif; ?>
+
+<h2 class="form-section form-section-standalone">Dados de acesso</h2>
+
+<?php foreach ($accountErrors as $error): ?>
+    <div class="alert alert-error"><?= e($error) ?></div>
+<?php endforeach; ?>
+
+<form method="post" class="form-card" action="<?= e(base_url('admin/settings.php')) ?>" novalidate>
+    <?= csrf_field() ?>
+    <input type="hidden" name="form" value="account">
+
+    <div class="field-row">
+        <label class="field">
+            <span class="field-label">Nome *</span>
+            <input type="text" name="name" value="<?= e($accountValues['name']) ?>"
+                   maxlength="100" autocomplete="name" required>
+        </label>
+
+        <label class="field">
+            <span class="field-label">E-mail (login) *</span>
+            <input type="email" name="email" value="<?= e($accountValues['email']) ?>"
+                   maxlength="190" autocomplete="username" required>
+        </label>
+    </div>
+
+    <label class="field">
+        <span class="field-label">Senha atual *</span>
+        <input type="password" name="current_password" autocomplete="current-password" required>
+        <span class="field-hint">
+            Exigida para confirmar qualquer alteracao, inclusive so do nome.
+        </span>
+    </label>
+
+    <div class="field-row">
+        <label class="field">
+            <span class="field-label">Nova senha</span>
+            <input type="password" name="new_password" autocomplete="new-password" minlength="10">
+            <span class="field-hint">Minimo de 10 caracteres. Deixe em branco para manter a atual.</span>
+        </label>
+
+        <label class="field">
+            <span class="field-label">Confirmar nova senha</span>
+            <input type="password" name="confirm_password" autocomplete="new-password" minlength="10">
+        </label>
+    </div>
+
+    <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Salvar dados de acesso</button>
+    </div>
+</form>
 
 <?php require __DIR__ . '/includes/footer.php'; ?>
