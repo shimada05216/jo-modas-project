@@ -26,6 +26,10 @@ $products = $total > 0
     ? showcase_products('recent', HOME_PER_PAGE, null, ($page - 1) * HOME_PER_PAGE)
     : [];
 
+// Faixa de categorias da home. Vem do banco: cadastrar ou desativar uma
+// categoria no painel muda esta lista sozinho, sem tocar em codigo.
+$categories = active_categories();
+
 $pageTitle = 'Moda feminina';
 $metaDesc  = 'Jo Modas: vestidos, blusas e acessórios femininos. '
            . 'Escolha cor e tamanho e finalize seu pedido pelo WhatsApp.';
@@ -67,6 +71,23 @@ require __DIR__ . '/includes/site_header.php';
    e uma <section class="shelf"> para cada grupo.
    ============================================================ */
 ?>
+
+<?php if ($categories !== []): ?>
+    <?php
+    /*
+     * Faixa compacta de categorias, retomada a pedido do cliente. Uma
+     * linha so, rolando de lado no celular, para os produtos continuarem
+     * logo abaixo. Nao volta o banner: ele segue comentado acima.
+     */
+    ?>
+    <nav class="cat-strip" aria-label="Navegar por categoria">
+        <?php foreach ($categories as $category): ?>
+            <a href="<?= e(base_url('categoria.php?slug=' . rawurlencode($category['slug']))) ?>">
+                <?= e($category['name']) ?>
+            </a>
+        <?php endforeach; ?>
+    </nav>
+<?php endif; ?>
 
 <div class="page-intro">
     <h1 class="page-heading">Nossos produtos</h1>

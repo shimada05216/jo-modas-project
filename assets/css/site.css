@@ -6,35 +6,62 @@
    ============================================================ */
 
 :root {
-    /* Rosa da marca, amostrado do logo e da barra de navegacao */
-    --rosa:       #e65875;
-    --rosa-esc:   #cf4260;
-    --rosa-claro: #fbe9ee;
-    --rosa-vero:  #f7d3dd;
+    /* ------------------------------------------------------------
+       Paleta: preto, dourado e neutros quentes.
 
-    --branco:     #ffffff;
-    --areia:      #fdf8f9;
-    --areia-forte:#f4ebee;
-    --linha:      #ecdfe3;
+       Preto manda nas acoes (botoes, barras). O dourado e ACENTO:
+       preco, item ativo, detalhe. Dourado em tudo cansa e tira a
+       elegancia, entao ele aparece pouco e sempre sobre fundo claro.
+       ------------------------------------------------------------ */
 
-    --tinta:      #231c1e;
-    --tinta-suave:#6f6469;
+    --color-bg:      #ffffff;
+    --color-surface: #faf8f5;   /* neutro quente para blocos */
+    --color-text:    #17161a;
+    --color-muted:   #6b6560;
+    --color-line:    #e6e1d8;
 
-    --preto:      #16110f;
+    --color-primary:      #17161a;   /* quase preto: acoes */
+    --color-primary-dark: #000000;
+
+    /* Dourado discreto. O tom escuro e o unico usado em texto pequeno,
+       porque o claro nao teria contraste suficiente. */
+    --color-accent:      #b08b43;
+    --color-accent-dark: #8a6a2f;
+    --color-accent-soft: #f7f0e2;
+    --color-accent-line: #e6d7b8;
+
+    /* ------------------------------------------------------------
+       Nomes antigos, mantidos como apelido para nao reescrever as
+       centenas de regras que ja existem. A cor vem toda daqui de cima.
+       ------------------------------------------------------------ */
+    --rosa:       var(--color-accent);
+    --rosa-esc:   var(--color-accent-dark);
+    --rosa-claro: var(--color-accent-soft);
+    --rosa-vero:  var(--color-accent-line);
+
+    --branco:     var(--color-bg);
+    --areia:      var(--color-surface);
+    --areia-forte:#f0ece4;
+    --linha:      var(--color-line);
+
+    --tinta:      var(--color-text);
+    --tinta-suave:var(--color-muted);
+
+    --preto:      var(--color-primary);
 
     --ok:         #1b6b3a;
-    --alerta-bg:  #fff6e5;
-    --alerta-br:  #f0dcae;
+    --alerta-bg:  #fdf6e6;
+    --alerta-br:  #ecdcb4;
     --alerta-tx:  #8a5a00;
 
-    --raio:       6px;
-    --raio-g:     14px;
+    --raio:       4px;
+    --raio-g:     10px;
     --larg:       1200px;
 
     --serif:      Georgia, "Times New Roman", serif;
     --sans:       "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
 
-    --sombra:     0 8px 26px rgba(35, 28, 30, .08);
+    --sombra:     0 8px 26px rgba(23, 22, 26, .08);
 }
 
 * { box-sizing: border-box; }
@@ -151,7 +178,7 @@ body.menu-open .hdr-burger span:nth-child(3) { transform: translateY(-8px) rotat
     height: 18px;
     padding: 0 5px;
     border-radius: 999px;
-    background: var(--rosa);
+    background: var(--color-primary);
     color: #fff;
     font-size: 11px;
     font-weight: 700;
@@ -181,7 +208,7 @@ body.menu-open .nav { transform: translateX(0); visibility: visible; }
     align-items: center;
     justify-content: space-between;
     padding: 14px 18px;
-    background: var(--rosa);
+    background: var(--color-primary);
     color: #fff;
     font-size: 12px;
     font-weight: 700;
@@ -305,8 +332,8 @@ body.menu-open .nav { transform: translateX(0); visibility: visible; }
     cursor: pointer;
 }
 
-.btn-solid { background: var(--rosa); color: #fff; }
-.btn-solid:hover { background: var(--rosa-esc); }
+.btn-solid { background: var(--color-primary); color: #fff; }
+.btn-solid:hover { background: var(--color-primary-dark); }
 
 .btn-line { background: transparent; border-color: var(--tinta); color: var(--tinta); }
 .btn-line:hover { background: var(--tinta); color: #fff; }
@@ -367,22 +394,34 @@ body.menu-open .nav { transform: translateX(0); visibility: visible; }
 
 .cat-strip {
     display: flex;
-    gap: 18px;
-    margin-bottom: 40px;
-    padding-bottom: 6px;
+    gap: 8px;
+    margin-bottom: 18px;
+    padding-bottom: 4px;
     overflow-x: auto;
     scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
 }
 
 .cat-strip::-webkit-scrollbar { display: none; }
 
 .cat-strip a {
     flex: 0 0 auto;
-    width: 76px;
-    text-align: center;
-    font-size: 12px;
+    min-height: 38px;
+    padding: 9px 16px;
+    display: flex;
+    align-items: center;
+    border: 1px solid var(--color-line);
+    border-radius: 999px;
+    background: var(--color-bg);
+    color: var(--color-text);
+    font-size: 13px;
     text-decoration: none;
-    color: var(--tinta);
+    white-space: nowrap;
+}
+
+.cat-strip a:hover {
+    border-color: var(--color-accent);
+    color: var(--color-accent-dark);
 }
 
 .cat-strip .cat-bolha {
@@ -538,7 +577,7 @@ body.menu-open .nav { transform: translateX(0); visibility: visible; }
     padding: 11px 12px;
     border: 0;
     border-radius: var(--raio);
-    background: var(--rosa);
+    background: var(--color-primary);
     color: #fff;
     font: inherit;
     font-size: 12px;
@@ -549,7 +588,7 @@ body.menu-open .nav { transform: translateX(0); visibility: visible; }
     text-decoration: none;
 }
 
-.card-buy:hover { background: var(--rosa-esc); }
+.card-buy:hover { background: var(--color-primary-dark); }
 
 .card-buy.is-disabled {
     background: var(--areia-forte);
@@ -698,7 +737,7 @@ body.menu-open .nav { transform: translateX(0); visibility: visible; }
 
 .option:hover:not(:disabled) { border-color: var(--rosa); }
 
-.option.is-active { background: var(--rosa); border-color: var(--rosa); color: #fff; }
+.option.is-active { background: var(--color-primary); border-color: var(--color-primary); color: #fff; }
 
 .option.is-out {
     color: #b6adb0;
@@ -735,7 +774,7 @@ body.menu-open .nav { transform: translateX(0); visibility: visible; }
     padding: 15px 22px;
     border: 0;
     border-radius: var(--raio);
-    background: var(--rosa);
+    background: var(--color-primary);
     color: #fff;
     font: inherit;
     font-size: 14px;
@@ -745,7 +784,7 @@ body.menu-open .nav { transform: translateX(0); visibility: visible; }
     cursor: pointer;
 }
 
-.btn-buy:hover:not(:disabled) { background: var(--rosa-esc); }
+.btn-buy:hover:not(:disabled) { background: var(--color-primary-dark); }
 .btn-buy:disabled { background: var(--areia-forte); color: #a79ea1; cursor: not-allowed; }
 
 .added-msg {
@@ -920,14 +959,14 @@ body.menu-open .nav { transform: translateX(0); visibility: visible; }
     margin-top: 6px;
     padding: 10px 18px;
     border-radius: 999px;
-    background: var(--rosa);
+    background: var(--color-primary);
     color: #fff;
     font-size: 13px;
     font-weight: 700;
     text-decoration: none;
 }
 
-.ftr-zap:hover { background: var(--rosa-esc); }
+.ftr-zap:hover { background: var(--color-primary-dark); }
 .ftr-zap svg { width: 17px; height: 17px; fill: currentColor; }
 
 .ftr-note { margin: 14px 0 0; font-size: 12px; color: var(--tinta-suave); }
