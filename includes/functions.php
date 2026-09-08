@@ -617,6 +617,22 @@ function require_setup_access(): void
 // =========================================================
 
 /**
+ * Regra de VISIBILIDADE do produto na loja.
+ *
+ * Aparece quem tem ao menos uma variacao ativa com estoque, ou quem
+ * esta marcado com show_without_stock. Visibilidade e disponibilidade
+ * sao coisas separadas: este trecho decide apenas se o produto entra
+ * na listagem, nunca se da para comprar.
+ */
+const PRODUCT_VISIBLE_SQL = '(
+            p.show_without_stock = 1
+            OR EXISTS (
+                SELECT 1 FROM product_variants pv2
+                 WHERE pv2.product_id = p.id AND pv2.active = 1 AND pv2.stock > 0
+            )
+        )';
+
+/**
  * Categorias ativas, na ordem definida no painel.
  * Alimenta o menu do cabecalho e a lista do rodape, entao e consultada
  * uma única vez por requisicao.
@@ -674,7 +690,7 @@ function showcase_products(
     $offset = max(0, $offset);
 
     $stmt = db()->prepare(
-        'SELECT p.id, p.name, p.slug, p.price, p.promo_price,
+        'SELECT p.id, p.name, p.slug, p.price, p.promo_price, p.show_without_stock,
                 p.featured, p.is_new, p.best_seller,
                 c.name AS category_name, c.slug AS category_slug,
                 (SELECT pi.filename FROM product_images pi
@@ -687,7 +703,9 @@ function showcase_products(
            JOIN categories c ON c.id = p.category_id
           -- c.active também entra: desativar uma categoria no painel deve
           -- tirar os produtos dela da loja, e não apenas some-la do menu.
-          WHERE p.active = 1 AND c.active = 1 AND ' . $conditions[$filter] . '
+          WHERE p.active = 1 AND c.active = 1
+            AND ' . PRODUCT_VISIBLE_SQL . '
+            AND ' . $conditions[$filter] . '
           ORDER BY p.created_at DESC, p.id DESC
           LIMIT ' . $limit . ' OFFSET ' . $offset
     );
@@ -706,7 +724,8 @@ function count_active_products(): int
         'SELECT COUNT(*)
            FROM products p
            JOIN categories c ON c.id = p.category_id
-          WHERE p.active = 1 AND c.active = 1'
+          WHERE p.active = 1 AND c.active = 1
+            AND ' . PRODUCT_VISIBLE_SQL
     )->fetchColumn();
 }
 
@@ -715,8 +734,14 @@ function count_active_products(): int
  */
 function count_category_products(int $categoryId): int
 {
+    // Mesmas condicoes de showcase_products('category'), senao a contagem
+    // da paginacao nao bate com o que a pagina realmente lista.
     $stmt = db()->prepare(
-        'SELECT COUNT(*) FROM products WHERE category_id = ? AND active = 1'
+        'SELECT COUNT(*)
+           FROM products p
+           JOIN categories c ON c.id = p.category_id
+          WHERE p.category_id = ? AND p.active = 1 AND c.active = 1
+            AND ' . PRODUCT_VISIBLE_SQL
     );
     $stmt->execute([$categoryId]);
 

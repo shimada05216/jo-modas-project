@@ -106,6 +106,10 @@ CREATE TABLE `products` (
   `price`             DECIMAL(10,2) NOT NULL,
   `promo_price`       DECIMAL(10,2) NULL DEFAULT NULL,
   `active`            TINYINT(1) UNSIGNED NOT NULL DEFAULT 1,
+  -- Deixa o produto na vitrine mesmo sem variacao vendavel. Visibilidade
+  -- e disponibilidade sao coisas diferentes: aparecer nao quer dizer que
+  -- da para comprar.
+  `show_without_stock` TINYINT(1) UNSIGNED NOT NULL DEFAULT 0,
   -- Marcadores usados pelas vitrines da home.
   `featured`          TINYINT(1) UNSIGNED NOT NULL DEFAULT 0,
   `is_new`            TINYINT(1) UNSIGNED NOT NULL DEFAULT 0,

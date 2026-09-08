@@ -87,6 +87,22 @@ foreach ($variants as $variant) {
 $price       = effective_price($product);
 $hasDiscount = $price < (float) $product['price'];
 
+// Disponibilidade e coisa separada de visibilidade: o produto pode estar
+// na loja (marcador "exibir mesmo sem estoque") sem ter nada vendavel.
+$hasSellable = false;
+
+foreach ($variants as $variant) {
+    if ((int) $variant['stock'] > 0) {
+        $hasSellable = true;
+        break;
+    }
+}
+
+// Numero da loja para o "consultar disponibilidade". Vazio esconde o botao.
+$consultWhatsapp = store_whatsapp_number();
+$consultText     = 'Olá! Tenho interesse no produto "' . $product['name']
+                 . '". Ele está disponível?';
+
 // Dados entregues ao JavaScript. O preco vai junto so para montar a
 // mensagem do WhatsApp; a pagina do carrinho confere tudo de novo
 // contra o banco antes de fechar o pedido.
@@ -176,9 +192,28 @@ require __DIR__ . '/includes/site_header.php';
             <p class="product-short"><?= e($product['short_description']) ?></p>
         <?php endif; ?>
 
-        <?php if ($variants === []): ?>
+        <?php if (!$hasSellable): ?>
 
-            <p class="unavailable">Este produto está sem opções disponíveis no momento.</p>
+            <?php
+            /*
+             * Visivel, mas sem nada vendavel. Nao mostramos seletor nem
+             * botao de compra: colocar isto no carrinho geraria uma linha
+             * fantasma no pedido do WhatsApp. O caminho honesto e falar
+             * com a loja.
+             */
+            ?>
+            <div class="unavailable">
+                <strong>Indisponível no momento</strong>
+                <p>Esta peça está sem estoque para pronta entrega.</p>
+
+                <?php if ($consultWhatsapp !== ''): ?>
+                    <a class="btn-buy btn-consult"
+                       href="https://wa.me/<?= e($consultWhatsapp) ?>?text=<?= e(rawurlencode($consultText)) ?>"
+                       target="_blank" rel="noopener">
+                        Consultar disponibilidade pelo WhatsApp
+                    </a>
+                <?php endif; ?>
+            </div>
 
         <?php else: ?>
 

@@ -1084,3 +1084,24 @@ body.menu-open .nav { transform: translateX(0); visibility: visible; }
     * { transition: none !important; animation: none !important; }
     .card-link:hover .card-media img { transform: none; }
 }
+
+/* Produto visivel porem sem nada vendavel */
+.unavailable strong {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 15px;
+    color: var(--tinta);
+}
+
+.unavailable p { margin: 0 0 14px; }
+
+.btn-consult {
+    display: block;
+    background: transparent;
+    border: 1px solid var(--tinta);
+    color: var(--tinta);
+    text-decoration: none;
+    line-height: 24px;
+}
+
+.btn-consult:hover { background: var(--tinta); color: #fff; }
