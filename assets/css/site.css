@@ -25,7 +25,7 @@
 
     /* Dourado discreto. O tom escuro e o unico usado em texto pequeno,
        porque o claro nao teria contraste suficiente. */
-    --color-accent:      #b08b43;
+    --color-accent:      #c6a15b;
     --color-accent-dark: #8a6a2f;
     --color-accent-soft: #f7f0e2;
     --color-accent-line: #e6d7b8;
@@ -247,7 +247,7 @@ body.menu-open .nav { transform: translateX(0); visibility: visible; }
     cursor: pointer;
 }
 
-.nav-link.is-active { color: var(--rosa); font-weight: 700; }
+.nav-link.is-active { color: var(--color-accent-dark); font-weight: 700; }
 
 .nav-chevron {
     width: 18px;
@@ -284,7 +284,7 @@ body.menu-open .nav { transform: translateX(0); visibility: visible; }
 
 .nav-sub a.is-active {
     border-left-color: var(--rosa);
-    color: var(--rosa);
+    color: var(--color-accent-dark);
     font-weight: 700;
 }
 
@@ -312,7 +312,7 @@ body.menu-open .nav { transform: translateX(0); visibility: visible; }
 
 .crumb { margin-bottom: 18px; font-size: 13px; color: var(--tinta-suave); }
 .crumb a { text-decoration: none; }
-.crumb a:hover { color: var(--rosa); }
+.crumb a:hover { color: var(--color-accent-dark); }
 .crumb-sep { margin: 0 7px; opacity: .5; }
 
 /* ---------- Botoes ---------- */
@@ -360,7 +360,7 @@ body.menu-open .nav { transform: translateX(0); visibility: visible; }
     font-weight: 700;
     letter-spacing: .22em;
     text-transform: uppercase;
-    color: var(--rosa);
+    color: var(--color-accent-dark);
 }
 
 .hero-title {
@@ -373,7 +373,7 @@ body.menu-open .nav { transform: translateX(0); visibility: visible; }
     text-transform: uppercase;
 }
 
-.hero-title em { font-style: normal; color: var(--rosa); display: block; }
+.hero-title em { font-style: normal; color: var(--color-accent-dark); display: block; }
 
 .hero-sub { margin: 14px 0 22px; max-width: 42ch; color: var(--tinta-suave); }
 
@@ -434,7 +434,7 @@ body.menu-open .nav { transform: translateX(0); visibility: visible; }
     border: 2px solid var(--rosa-vero);
     border-radius: 50%;
     background: var(--rosa-claro);
-    color: var(--rosa);
+    color: var(--color-accent-dark);
     font-family: var(--serif);
     font-size: 24px;
     transition: background .18s ease, border-color .18s ease;
@@ -527,7 +527,7 @@ body.menu-open .nav { transform: translateX(0); visibility: visible; }
     text-transform: uppercase;
 }
 
-.flag-promo { background: var(--rosa); color: #fff; }
+.flag-promo { background: var(--color-accent); color: var(--color-primary); }
 
 .card-out {
     position: absolute;
@@ -568,7 +568,7 @@ body.menu-open .nav { transform: translateX(0); visibility: visible; }
     white-space: nowrap;
 }
 
-.price-now { font-size: 16px; font-weight: 700; color: var(--rosa); white-space: nowrap; }
+.price-now { font-size: 16px; font-weight: 700; color: var(--color-accent-dark); white-space: nowrap; }
 
 /* Alvo de toque confortavel: 44px de altura minima. */
 .card-buy {
@@ -636,7 +636,7 @@ body.menu-open .nav { transform: translateX(0); visibility: visible; }
     text-decoration: none;
 }
 
-.pager-btn:hover { border-color: var(--rosa); color: var(--rosa); }
+.pager-btn:hover { border-color: var(--rosa); color: var(--color-accent-dark); }
 .pager-info { font-size: 14px; color: var(--tinta-suave); }
 
 .empty-state {
@@ -886,7 +886,7 @@ body.menu-open .nav { transform: translateX(0); visibility: visible; }
     cursor: pointer;
 }
 
-.cart-remove:hover { color: var(--rosa); }
+.cart-remove:hover { color: var(--color-accent-dark); }
 
 .cart-summary { margin-top: 24px; padding-top: 20px; border-top: 2px solid var(--tinta); }
 .cart-total { margin: 0 0 16px; font-size: 22px; font-weight: 700; text-align: right; }
@@ -950,7 +950,7 @@ body.menu-open .nav { transform: translateX(0); visibility: visible; }
 .ftr-list { list-style: none; margin: 0; padding: 0; }
 .ftr-list li { margin-bottom: 8px; }
 .ftr-list a { font-size: 14px; text-decoration: none; }
-.ftr-list a:hover { color: var(--rosa); }
+.ftr-list a:hover { color: var(--color-accent-dark); }
 
 .ftr-zap {
     display: inline-flex;
@@ -1065,8 +1065,8 @@ body.menu-open .nav { transform: translateX(0); visibility: visible; }
         white-space: nowrap;
     }
 
-    .nav-link:hover { color: var(--rosa); }
-    .nav-link.is-active { color: var(--rosa); }
+    .nav-link:hover { color: var(--color-accent-dark); }
+    .nav-link.is-active { color: var(--color-accent-dark); }
 
     /* Submenu suspenso das categorias */
     .nav-drop { position: relative; }
@@ -1107,8 +1107,8 @@ body.menu-open .nav { transform: translateX(0); visibility: visible; }
         font-weight: 400;
     }
 
-    .nav-sub a:hover { background: var(--rosa-claro); color: var(--rosa); }
-    .nav-sub a.is-active { background: var(--rosa-claro); color: var(--rosa); font-weight: 700; }
+    .nav-sub a:hover { background: var(--rosa-claro); color: var(--color-text); }
+    .nav-sub a.is-active { background: var(--rosa-claro); color: var(--color-text); font-weight: 700; }
 
     .site-main { padding: 24px 24px 64px; }
 
