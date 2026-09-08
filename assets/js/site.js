@@ -83,10 +83,13 @@
         }
 
         if (catToggle && catDrop) {
-            catToggle.addEventListener('click', function (event) {
+            catToggle.addEventListener('click', function () {
                 if (!isDesktop()) {
-                    // Na gaveta o botao nao faz nada: a lista ja esta visivel.
-                    event.preventDefault();
+                    // Na gaveta funciona como sanfona: comeca aberta e o
+                    // botao recolhe/expande. Antes ele nao fazia nada, o
+                    // que dava a impressao de menu travado.
+                    var collapsed = catDrop.classList.toggle('is-collapsed');
+                    catToggle.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
                     return;
                 }
 

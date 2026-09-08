@@ -233,13 +233,17 @@ body.menu-open .nav { transform: translateX(0); visibility: visible; }
     transition: transform .2s ease;
 }
 
-/* No celular as categorias ficam sempre abertas dentro da gaveta:
-   um toque a menos para chegar ao produto. */
+/* No celular as categorias comecam ABERTAS: um toque a menos para
+   chegar ao produto. O botao continua respondendo, recolhendo e
+   expandindo, para nao parecer um controle morto. */
 .nav-sub {
     list-style: none;
     margin: 0;
     padding: 0 0 6px;
 }
+
+.nav-drop.is-collapsed .nav-sub { display: none; }
+.nav-drop.is-collapsed .nav-chevron { transform: rotate(-90deg); }
 
 .nav-sub a {
     display: block;
@@ -260,7 +264,12 @@ body.menu-open .nav { transform: translateX(0); visibility: visible; }
 .hdr-scrim {
     position: fixed;
     inset: 0;
-    z-index: 70;
+    /* Abaixo do cabecalho (z-index 60), nunca acima.
+       O .hdr e sticky com z-index, o que cria contexto de empilhamento:
+       o z-index 80 da gaveta so vale DENTRO do cabecalho. Com o veu em
+       70 o cabecalho inteiro, gaveta incluida, ficava por baixo dele, e
+       cada toque numa categoria caia no veu e fechava o menu. */
+    z-index: 50;
     background: rgba(35, 28, 30, .45);
 }
 
