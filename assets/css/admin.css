@@ -1,24 +1,45 @@
 /* ============================================================
    Jo Modas - Painel administrativo
-   Barra lateral escura com destaque rosa, seguindo os mockups.
-   Escrito mobile-first: no celular a lateral vira gaveta.
+   Barra lateral preta com destaque dourado, na mesma identidade da
+   loja. Escrito mobile-first: no celular a lateral vira gaveta.
    ============================================================ */
 
 :root {
-    --rosa:       #e65875;
-    --rosa-esc:   #cf4260;
-    --rosa-claro: #fce9ee;
+    /* --------------------------------------------------------
+       Paleta da marca. E daqui que sai a cor de tudo no painel:
+       trocar um valor aqui muda o painel inteiro, sem sair
+       cacando dourado espalhado pelo arquivo.
+       -------------------------------------------------------- */
+    --admin-primary:      #111111;
+    --admin-primary-dark: #000000;
 
-    --lateral:    #1c1c1e;
-    --lateral-2:  #2a2a2d;
-    --lateral-tx: #b6b2b6;
+    --admin-accent:       #c6a15b;
+    /* Dourado escuro para TEXTO sobre branco: o dourado claro tem
+       contraste baixo demais e alguns clientes leem em telas ruins. */
+    --admin-accent-dark:  #8a6a2f;
+    --admin-accent-soft:  #f6efe1;
 
-    --fundo:      #fbfbfb;
-    --superficie: #ffffff;
-    --borda:      #e9e4e6;
+    --admin-bg:           #f7f5f0;
+    --admin-surface:      #ffffff;
+    --admin-text:         #1a1a1a;
+    --admin-border:       #ded8cc;
 
-    --tinta:      #231c1e;
-    --suave:      #6f6469;
+    /* Nomes antigos mantidos como apelidos: as regras ja escritas
+       pegam a paleta nova sem precisar ser reescritas uma a uma. */
+    --rosa:       var(--admin-accent);
+    --rosa-esc:   var(--admin-accent-dark);
+    --rosa-claro: var(--admin-accent-soft);
+
+    --lateral:    var(--admin-primary);
+    --lateral-2:  #262626;
+    --lateral-tx: #b9b3a7;
+
+    --fundo:      var(--admin-bg);
+    --superficie: var(--admin-surface);
+    --borda:      var(--admin-border);
+
+    --tinta:      var(--admin-text);
+    --suave:      #6b6259;
 
     --ok:         #1b6b3a;
     --ok-bg:      #e7f5ec;
@@ -48,10 +69,10 @@ body.admin {
 
 body.admin.nav-open { overflow: hidden; }
 
-a { color: var(--rosa); }
+a { color: var(--admin-accent-dark); }
 img { max-width: 100%; display: block; }
 
-:focus-visible { outline: 2px solid var(--rosa); outline-offset: 2px; }
+:focus-visible { outline: 2px solid var(--admin-accent-dark); outline-offset: 2px; }
 
 /* ============================================================
    Barra lateral
@@ -99,7 +120,7 @@ body.admin.nav-open .side { transform: translateX(0); visibility: visible; }
 
 .side-nav a:hover { background: var(--lateral-2); color: #fff; }
 
-.side-nav a.is-active { background: var(--rosa); color: #fff; font-weight: 600; }
+.side-nav a.is-active { background: var(--admin-accent); color: var(--admin-primary); font-weight: 600; }
 
 .side-nav svg {
     flex: 0 0 auto;
@@ -135,7 +156,7 @@ body.admin.nav-open .side { transform: translateX(0); visibility: visible; }
 .side-foot button:hover { background: var(--lateral-2); color: #fff; }
 .side-foot svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.7; }
 
-.side-scrim { position: fixed; inset: 0; z-index: 70; background: rgba(28, 28, 30, .5); }
+.side-scrim { position: fixed; inset: 0; z-index: 70; background: rgba(17, 17, 17, .5); }
 
 /* ============================================================
    Topo e conteudo
@@ -180,7 +201,7 @@ body.admin.nav-open .side { transform: translateX(0); visibility: visible; }
     height: 34px;
     border-radius: 50%;
     background: var(--rosa-claro);
-    color: var(--rosa);
+    color: var(--admin-primary);
     font-weight: 700;
 }
 
@@ -246,9 +267,9 @@ body.admin.nav-open .side { transform: translateX(0); visibility: visible; }
     background: var(--rosa-claro);
 }
 
-.card-icon svg { width: 21px; height: 21px; fill: none; stroke: var(--rosa); stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.card-icon svg { width: 21px; height: 21px; fill: none; stroke: var(--admin-accent-dark); stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
 
-.card-icon.tom-2 { background: #ede9fe; } .card-icon.tom-2 svg { stroke: #7c5cd6; }
+.card-icon.tom-2 { background: var(--admin-bg); } .card-icon.tom-2 svg { stroke: var(--admin-primary); }
 .card-icon.tom-3 { background: var(--ok-bg); } .card-icon.tom-3 svg { stroke: var(--ok); }
 .card-icon.tom-4 { background: var(--aviso-bg); } .card-icon.tom-4 svg { stroke: #d08700; }
 
@@ -288,7 +309,7 @@ body.admin.nav-open .side { transform: translateX(0); visibility: visible; }
 }
 
 .table tbody tr:last-child td { border-bottom: 0; }
-.table tbody tr:hover { background: #fdfbfc; }
+.table tbody tr:hover { background: var(--admin-bg); }
 
 .col-order { width: 80px; }
 .col-num { width: 96px; text-align: center; }
@@ -304,7 +325,7 @@ td.col-num { text-align: center; }
 
 .badge { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; }
 .badge-on { background: var(--ok-bg); color: var(--ok); }
-.badge-off { background: #eceef1; color: var(--suave); }
+.badge-off { background: var(--admin-border); color: #554e45; }
 
 .pill {
     display: inline-block;
@@ -320,7 +341,7 @@ td.col-num { text-align: center; }
 }
 
 .price-old { margin-right: 6px; color: var(--suave); font-size: 13px; text-decoration: line-through; }
-.price-now { color: var(--rosa); font-weight: 700; }
+.price-now { color: var(--admin-accent-dark); font-weight: 700; }
 
 /* ============================================================
    Botoes
@@ -331,7 +352,7 @@ td.col-num { text-align: center; }
     padding: 10px 18px;
     border: 1px solid transparent;
     border-radius: 8px;
-    background: #f2eef0;
+    background: var(--admin-bg);
     color: var(--tinta);
     font: inherit;
     font-weight: 600;
@@ -339,11 +360,11 @@ td.col-num { text-align: center; }
     cursor: pointer;
 }
 
-.btn-primary { background: var(--rosa); color: #fff; }
-.btn-primary:hover { background: var(--rosa-esc); }
+.btn-primary { background: var(--admin-primary); color: #fff; }
+.btn-primary:hover { background: var(--admin-primary-dark); }
 
 .btn-ghost { background: transparent; border-color: var(--borda); color: var(--suave); }
-.btn-ghost:hover { border-color: var(--rosa); color: var(--rosa); }
+.btn-ghost:hover { border-color: var(--admin-primary); color: var(--admin-primary); }
 
 .btn-danger { background: transparent; border-color: #f0c4c0; color: var(--erro); }
 .btn-danger:hover:not(:disabled) { background: var(--erro); border-color: var(--erro); color: #fff; }
@@ -374,8 +395,8 @@ td.col-num { text-align: center; }
 
 .field input:focus, .field select:focus, .field textarea:focus {
     outline: none;
-    border-color: var(--rosa);
-    box-shadow: 0 0 0 3px rgba(230, 88, 117, .14);
+    border-color: var(--admin-accent-dark);
+    box-shadow: 0 0 0 3px rgba(198, 161, 91, .30);
 }
 
 .field textarea { resize: vertical; min-height: 92px; }
@@ -390,7 +411,7 @@ td.col-num { text-align: center; }
 .field-group legend { padding: 0 6px; font-size: 13px; font-weight: 700; }
 
 .field-check { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; font-size: 14px; }
-.field-check input { width: 17px; height: 17px; accent-color: var(--rosa); }
+.field-check input { width: 17px; height: 17px; accent-color: var(--admin-primary); }
 
 .form-actions { display: flex; gap: 10px; margin-top: 4px; padding-top: 14px; border-top: 1px solid var(--borda); }
 
@@ -410,7 +431,7 @@ td.col-num { text-align: center; }
 .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 14px; margin-top: 22px; }
 
 .gallery-item { margin: 0; padding: 10px; background: var(--superficie); border: 1px solid var(--borda); border-radius: var(--raio); }
-.gallery-item.is-main { border-color: var(--rosa); box-shadow: 0 0 0 2px rgba(230, 88, 117, .15); }
+.gallery-item.is-main { border-color: var(--admin-accent-dark); box-shadow: 0 0 0 2px rgba(198, 161, 91, .32); }
 
 .gallery-item img { width: 100%; height: 180px; object-fit: cover; border-radius: 8px; background: var(--fundo); }
 
@@ -459,7 +480,7 @@ td.col-num { text-align: center; }
     justify-content: center;
     min-height: 100vh;
     padding: 24px;
-    background: linear-gradient(150deg, #fdeff3 0%, var(--fundo) 60%);
+    background: linear-gradient(150deg, var(--admin-accent-soft) 0%, var(--fundo) 60%);
 }
 
 .login-card {
@@ -469,7 +490,7 @@ td.col-num { text-align: center; }
     background: var(--superficie);
     border: 1px solid var(--borda);
     border-radius: 16px;
-    box-shadow: 0 12px 34px rgba(35, 28, 30, .08);
+    box-shadow: 0 12px 34px rgba(17, 17, 17, .08);
 }
 
 .login-logo { display: block; margin: 0 auto 6px; }
@@ -544,7 +565,7 @@ td.col-num { text-align: center; }
     background: var(--fundo);
 }
 
-.img-item.is-main { border-color: var(--rosa); box-shadow: 0 0 0 2px rgba(230, 88, 117, .15); }
+.img-item.is-main { border-color: var(--admin-accent-dark); box-shadow: 0 0 0 2px rgba(198, 161, 91, .32); }
 
 .img-item img {
     width: 100%;
@@ -564,7 +585,7 @@ td.col-num { text-align: center; }
     cursor: pointer;
 }
 
-.img-opt input { accent-color: var(--rosa); }
+.img-opt input { accent-color: var(--admin-primary); }
 
 /* ---------- Linhas de variacao ---------- */
 
@@ -598,7 +619,7 @@ td.col-num { text-align: center; }
     border: 1px solid var(--borda);
     border-radius: var(--raio);
     background: var(--superficie);
-    box-shadow: 0 -4px 16px rgba(35, 28, 30, .06);
+    box-shadow: 0 -4px 16px rgba(17, 17, 17, .06);
 }
 
 /* ---------- Modal ---------- */
@@ -611,7 +632,7 @@ td.col-num { text-align: center; }
     align-items: center;
     justify-content: center;
     padding: 20px;
-    background: rgba(28, 28, 30, .55);
+    background: rgba(17, 17, 17, .55);
 }
 
 .modal[hidden] { display: none; }
@@ -622,7 +643,7 @@ td.col-num { text-align: center; }
     padding: 22px;
     border-radius: var(--raio);
     background: var(--superficie);
-    box-shadow: 0 18px 44px rgba(28, 28, 30, .28);
+    box-shadow: 0 18px 44px rgba(17, 17, 17, .28);
 }
 
 .modal-box .form-actions { margin-top: 0; }
