@@ -218,6 +218,25 @@ function slugify(string $text): string
 {
     $text = trim($text);
 
+    // Troca direta das letras acentuadas do portugues ANTES do iconv.
+    // Sozinho, o iconv com TRANSLIT devolve "~a" para "ã", e o til vira
+    // separador: "Ação" saia como "ac-ao" em vez de "acao".
+    $text = strtr($text, [
+        'á' => 'a', 'à' => 'a', 'ã' => 'a', 'â' => 'a', 'ä' => 'a',
+        'é' => 'e', 'è' => 'e', 'ê' => 'e', 'ë' => 'e',
+        'í' => 'i', 'ì' => 'i', 'î' => 'i', 'ï' => 'i',
+        'ó' => 'o', 'ò' => 'o', 'õ' => 'o', 'ô' => 'o', 'ö' => 'o',
+        'ú' => 'u', 'ù' => 'u', 'û' => 'u', 'ü' => 'u',
+        'ç' => 'c', 'ñ' => 'n',
+        'Á' => 'A', 'À' => 'A', 'Ã' => 'A', 'Â' => 'A', 'Ä' => 'A',
+        'É' => 'E', 'È' => 'E', 'Ê' => 'E', 'Ë' => 'E',
+        'Í' => 'I', 'Ì' => 'I', 'Î' => 'I', 'Ï' => 'I',
+        'Ó' => 'O', 'Ò' => 'O', 'Õ' => 'O', 'Ô' => 'O', 'Ö' => 'O',
+        'Ú' => 'U', 'Ù' => 'U', 'Û' => 'U', 'Ü' => 'U',
+        'Ç' => 'C', 'Ñ' => 'N',
+    ]);
+
+    // Continua servindo para qualquer caractere fora da lista acima.
     if (function_exists('iconv')) {
         $converted = @iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $text);
         if ($converted !== false) {
@@ -762,6 +781,32 @@ function count_category_products(int $categoryId): int
  * Tamanhos numericos (36, 38, 40) vem depois das letras, em ordem de
  * número. Qualquer coisa desconhecida vai para o fim da lista.
  */
+/**
+ * Cores já usadas em alguma variação.
+ *
+ * Serve de sugestão no cadastro. Não existe tabela de cores: a própria
+ * lista de variações é a fonte, então uma cor aparece assim que é usada
+ * e some quando a última variação que a usava é apagada. Sem cadastro
+ * paralelo para manter.
+ */
+function distinct_variant_colors(): array
+{
+    return db()->query(
+        "SELECT DISTINCT color FROM product_variants WHERE color <> '' ORDER BY color ASC"
+    )->fetchAll(PDO::FETCH_COLUMN);
+}
+
+/**
+ * Tamanhos já usados, na ordem de exibição (PP, P, M, G, GG).
+ */
+function distinct_variant_sizes(): array
+{
+    return db()->query(
+        "SELECT DISTINCT size, size_order FROM product_variants
+          WHERE size <> '' ORDER BY size_order ASC, size ASC"
+    )->fetchAll(PDO::FETCH_COLUMN);
+}
+
 function size_sort_order(string $size): int
 {
     // slugify tira acentos e baixa a caixa, entao "Único" chega como "único".

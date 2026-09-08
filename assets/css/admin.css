@@ -495,3 +495,146 @@ td.col-num { text-align: center; }
 @media (prefers-reduced-motion: reduce) {
     * { transition: none !important; }
 }
+
+/* ============================================================
+   Cadastro unificado de produto
+   ============================================================ */
+
+.form-card + .form-card { margin-top: 16px; }
+
+.form-section {
+    margin: 0 0 16px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--borda);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--suave);
+}
+
+.field-hint-indent { margin: -12px 0 18px 27px; }
+
+/* Select + botao "+" na mesma linha */
+.inline-control { display: flex; gap: 8px; align-items: stretch; }
+.inline-control select { flex: 1; min-width: 0; }
+
+.btn-plus {
+    flex: 0 0 auto;
+    width: 44px;
+    padding: 0;
+    font-size: 20px;
+    line-height: 1;
+}
+
+/* ---------- Imagens dentro do formulario ---------- */
+
+.img-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 12px;
+    margin-bottom: 18px;
+}
+
+.img-item {
+    margin: 0;
+    padding: 8px;
+    border: 1px solid var(--borda);
+    border-radius: var(--raio);
+    background: var(--fundo);
+}
+
+.img-item.is-main { border-color: var(--rosa); box-shadow: 0 0 0 2px rgba(230, 88, 117, .15); }
+
+.img-item img {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 6px;
+    background: #fff;
+}
+
+.img-item figcaption { display: flex; flex-direction: column; gap: 4px; margin-top: 8px; }
+
+.img-opt {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.img-opt input { accent-color: var(--rosa); }
+
+/* ---------- Linhas de variacao ---------- */
+
+.variant-line {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+    padding: 14px;
+    margin-bottom: 10px;
+    border: 1px solid var(--borda);
+    border-left: 3px solid var(--rosa);
+    border-radius: var(--raio);
+    background: var(--fundo);
+}
+
+.variant-line .field { margin-bottom: 0; }
+.variant-line .field-check { margin-bottom: 0; }
+
+.variant-line-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+
+#variant-add { margin-top: 4px; }
+
+/* ---------- Barra de acoes fixa ---------- */
+
+.form-actions-sticky {
+    position: sticky;
+    bottom: 0;
+    z-index: 40;
+    margin-top: 16px;
+    padding: 14px;
+    border: 1px solid var(--borda);
+    border-radius: var(--raio);
+    background: var(--superficie);
+    box-shadow: 0 -4px 16px rgba(35, 28, 30, .06);
+}
+
+/* ---------- Modal ---------- */
+
+.modal {
+    position: fixed;
+    inset: 0;
+    z-index: 120;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(28, 28, 30, .55);
+}
+
+.modal[hidden] { display: none; }
+
+.modal-box {
+    width: 100%;
+    max-width: 420px;
+    padding: 22px;
+    border-radius: var(--raio);
+    background: var(--superficie);
+    box-shadow: 0 18px 44px rgba(28, 28, 30, .28);
+}
+
+.modal-box .form-actions { margin-top: 0; }
+
+/* ---------- Tablet e desktop ---------- */
+
+@media (min-width: 700px) {
+    .variant-line {
+        grid-template-columns: 1.1fr 0.8fr 1fr 0.7fr auto auto;
+        align-items: end;
+    }
+
+    .variant-line .field-stock input { max-width: 110px; }
+    .variant-line-actions { align-self: end; padding-bottom: 2px; }
+}
