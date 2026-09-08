@@ -680,7 +680,7 @@ body.menu-open .nav { transform: translateX(0); visibility: visible; }
 }
 
 .thumb img { width: 100%; height: 100%; object-fit: cover; }
-.thumb.is-active { border-color: var(--rosa); border-width: 2px; }
+.thumb.is-active { border-color: var(--color-accent-dark); border-width: 2px; }
 
 .product-name {
     font-family: var(--serif);
