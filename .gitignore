@@ -96,3 +96,7 @@ sftp-config.json
 /delivery/
 /delivery/*.zip
 /delivery/*.rar
+
+# Instrucoes internas de desenvolvimento. Ficam so nesta maquina:
+# descrevem o ambiente local e ja carregaram credencial de teste.
+CLAUDE.md
