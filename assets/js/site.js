@@ -75,14 +75,34 @@
         // dentro da gaveta, entao o botao nao deve escondê-la.
         // ---------------------------------------------------------
 
+        // Quem manda no estado visivel muda com a largura: no desktop e a
+        // classe is-open; no celular, is-collapsed. O aria-expanded tem de
+        // seguir a mesma regra, senao o leitor de tela anuncia "recolhido"
+        // numa lista que esta na tela.
+        function syncCatAria() {
+            if (!catToggle || !catDrop) {
+                return;
+            }
+
+            var open = isDesktop()
+                ? catDrop.classList.contains('is-open')
+                : !catDrop.classList.contains('is-collapsed');
+
+            catToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+        }
+
         function closeCategories() {
             if (catDrop) {
                 catDrop.classList.remove('is-open');
-                catToggle.setAttribute('aria-expanded', 'false');
+                syncCatAria();
             }
         }
 
         if (catToggle && catDrop) {
+            // O HTML nasce com aria-expanded="false", mas na gaveta do
+            // celular a sanfona ja aparece aberta.
+            syncCatAria();
+
             catToggle.addEventListener('click', function () {
                 if (!isDesktop()) {
                     // Na gaveta funciona como sanfona: comeca aberta e o
