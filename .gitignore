@@ -89,3 +89,10 @@ sftp-config.json
 # Fica so na maquina: nao e codigo e pesa 2,5 MB.
 # ------------------------------------------------------------
 /assets/images/example/
+
+# Pacote de entrega para o cliente: gerado sob demanda, fora do git.
+# E uma copia inteira da aplicacao mais um arquivo compactado de
+# varios MB -- nada disso pertence ao historico.
+/delivery/
+/delivery/*.zip
+/delivery/*.rar
