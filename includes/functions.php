@@ -330,8 +330,9 @@ function validate_image_upload(array $file): ?string
             return 'Falha no envio do arquivo.';
     }
 
-    if ($file['size'] > MAX_UPLOAD_SIZE) {
-        return 'A imagem excede ' . round(MAX_UPLOAD_SIZE / 1048576) . ' MB.';
+    if ($file['size'] > effective_upload_limit()) {
+        return 'A imagem excede o limite permitido pelo servidor ('
+             . format_bytes(effective_upload_limit()) . ').';
     }
 
     if (!is_uploaded_file($file['tmp_name'])) {
@@ -380,6 +381,87 @@ function validate_image_upload(array $file): ?string
  * Move a imagem enviada para uploads/products com um nome seguro.
  * Devolve o nome do arquivo gravado ou null em caso de falha.
  */
+/**
+ * Converte "2M", "8M", "512K", "1G" do php.ini em bytes.
+ * Devolve 0 quando nao ha limite (post_max_size = 0 significa ilimitado).
+ */
+function ini_bytes(string $value): int
+{
+    $value = trim($value);
+
+    if ($value === '') {
+        return 0;
+    }
+
+    $unit   = strtolower(substr($value, -1));
+    $number = (int) $value;
+
+    return match ($unit) {
+        'g'     => $number * 1024 * 1024 * 1024,
+        'm'     => $number * 1024 * 1024,
+        'k'     => $number * 1024,
+        default => (int) $value,
+    };
+}
+
+/**
+ * Maior imagem que ESTE servidor aceita de verdade, por arquivo.
+ *
+ * MAX_UPLOAD_SIZE e o teto que a loja escolhe, mas quem manda de fato e o
+ * php.ini: numa hospedagem com upload_max_filesize = 2M, prometer 5 MB so
+ * gera um envio que morre antes de chegar ao codigo. Aqui vale o MENOR
+ * entre os tres.
+ */
+function effective_upload_limit(): int
+{
+    static $cache = null;
+
+    if ($cache !== null) {
+        return $cache;
+    }
+
+    $limites = [MAX_UPLOAD_SIZE];
+
+    foreach (['upload_max_filesize', 'post_max_size'] as $chave) {
+        $bytes = ini_bytes((string) ini_get($chave));
+
+        if ($bytes > 0) {          // 0 = sem limite; nao entra na conta
+            $limites[] = $bytes;
+        }
+    }
+
+    return $cache = min($limites);
+}
+
+/**
+ * Quanto o servidor aceita no TOTAL de uma requisicao.
+ *
+ * Cada arquivo pode caber sozinho e mesmo assim o envio estourar quando
+ * sao varios: quem corta e o post_max_size, e o PHP descarta a requisicao
+ * inteira antes de qualquer validacao -- o formulario volta em branco,
+ * sem explicacao. Este valor deixa o aviso sair antes disso.
+ */
+function effective_post_limit(): int
+{
+    $bytes = ini_bytes((string) ini_get('post_max_size'));
+
+    return $bytes > 0 ? $bytes : 0;
+}
+
+/**
+ * Tamanho legivel: 2 MB, 512 KB.
+ */
+function format_bytes(int $bytes): string
+{
+    if ($bytes >= 1048576) {
+        $mb = $bytes / 1048576;
+
+        return rtrim(rtrim(number_format($mb, 1, ',', '.'), '0'), ',') . ' MB';
+    }
+
+    return max(1, (int) round($bytes / 1024)) . ' KB';
+}
+
 function save_uploaded_image(array $file, string $prefix = 'produto'): ?string
 {
     $info = @getimagesize($file['tmp_name']);
@@ -655,29 +737,21 @@ function require_setup_access(): void
 /**
  * Regra de VISIBILIDADE do produto na loja.
  *
- * Depende do modo de compra (REQUIRE_VARIANT_SELECTION):
+ * A MESMA nos dois modos de compra, de proposito:
  *
- * ESTRITO: aparece quem tem ao menos uma variacao ativa com estoque, ou
- *   quem esta marcado com show_without_stock. Faz sentido porque so se
- *   compra escolhendo cor e tamanho: sem variacao vendavel nao ha o que
- *   comprar, e o marcador serve para expor a peca mesmo assim.
+ *     variacao ativa com estoque  OU  show_without_stock = 1
  *
- * SIMPLES: aparece todo produto ativo. Aqui variacao e opcional, entao
- *   "sem variacao com estoque" nao quer mais dizer "sem nada a vender" --
- *   uma peca cadastrada sem cor e tamanho e vendavel do mesmo jeito.
- *   Manter a regra antiga esconderia justamente os produtos simples que o
- *   lojista acabou de cadastrar.
+ * (produto e categoria ativos ja sao exigidos por quem chama.)
  *
- * Em nenhum dos dois isto decide se da para comprar; so se o produto
- * entra na listagem. A coluna show_without_stock nao muda de significado
- * nem de valor: ela continua sendo o que abre excecao no modo estrito.
+ * REQUIRE_VARIANT_SELECTION decide COMO se compra, nunca SE o produto
+ * aparece. Amarrar as duas coisas tirava o efeito do marcador: no modo
+ * simples tudo aparecia e desmarcar a caixa nao fazia nada.
+ *
+ * Quem cuida do produto sem variacao e o padrao do formulario, que ja
+ * marca a caixa ao criar no modo simples -- e nao esta regra.
  */
 function product_visible_sql(): string
 {
-    if (!REQUIRE_VARIANT_SELECTION) {
-        return '1';
-    }
-
     return '(
             p.show_without_stock = 1
             OR EXISTS (

@@ -87,7 +87,15 @@ $values = [
     'promo_price'        => isset($product['promo_price']) && $product['promo_price'] !== null
         ? number_format((float) $product['promo_price'], 2, ',', '') : '',
     'active'             => isset($product['active'])             ? (int) $product['active']             : 1,
-    'show_without_stock' => isset($product['show_without_stock']) ? (int) $product['show_without_stock'] : 0,
+    // Ao EDITAR vale exatamente o que esta gravado.
+    //
+    // Ao CRIAR no modo de compra simples a caixa ja nasce marcada: ali
+    // variacao e opcional, e sem isso o produto recem-criado sem cor e
+    // tamanho nao apareceria na loja. E so um padrao -- desmarcar
+    // esconde o produto, como deve ser.
+    'show_without_stock' => isset($product['show_without_stock'])
+        ? (int) $product['show_without_stock']
+        : (REQUIRE_VARIANT_SELECTION ? 0 : 1),
     'featured'           => isset($product['featured'])           ? (int) $product['featured']           : 0,
     'is_new'             => isset($product['is_new'])             ? (int) $product['is_new']             : 0,
     'best_seller'        => isset($product['best_seller'])        ? (int) $product['best_seller']        : 0,
@@ -744,7 +752,8 @@ require __DIR__ . '/includes/header.php';
             <input type="file" name="images[]" multiple
                    accept="image/jpeg,image/png,image/webp">
             <span class="field-hint">
-                JPG, PNG ou WEBP, até <?= e((string) round(MAX_UPLOAD_SIZE / 1048576)) ?> MB cada.
+                JPG, PNG ou WEBP, até <?= e(format_bytes(effective_upload_limit())) ?> cada
+                (limite deste servidor).
                 Máximo de <?= e((string) MAX_IMAGES_PER_PRODUCT) ?> por produto.
                 As imagens são salvas junto com o produto.
             </span>
@@ -831,8 +840,15 @@ require __DIR__ . '/includes/header.php';
             <span>Exibir produto mesmo sem estoque cadastrado</span>
         </label>
         <p class="field-hint field-hint-indent">
-            Mantém o produto na vitrine mesmo sem variação disponível. Ele aparece
-            como <strong>Indisponível no momento</strong> e não pode ser comprado.
+            Mantém o produto na vitrine mesmo sem variação com estoque.
+            <?php if (REQUIRE_VARIANT_SELECTION): ?>
+                Ele aparece como <strong>Indisponível no momento</strong> e não pode
+                ser comprado.
+            <?php else: ?>
+                Como a loja está no modo de compra simples, ele continua podendo ser
+                comprado. <strong>Desmarque para tirar o produto da vitrine</strong>
+                enquanto não houver estoque.
+            <?php endif; ?>
         </p>
 
         <label class="field-check">
@@ -885,7 +901,8 @@ require __DIR__ . '/includes/header.php';
 
         // Mesmos limites que o servidor aplica. Aqui servem so para
         // avisar antes do envio; quem decide continua sendo o PHP.
-        maxUpload: <?= (int) MAX_UPLOAD_SIZE ?>,
+        maxUpload: <?= (int) effective_upload_limit() ?>,
+        maxPost: <?= (int) effective_post_limit() ?>,
         maxImages: <?= (int) MAX_IMAGES_PER_PRODUCT ?>
     };
 </script>
