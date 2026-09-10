@@ -175,7 +175,12 @@ function timing_reference_hash(): string
 //     de fora (bastaria errar a senha dele algumas vezes).
 // =========================================================
 
-const LOGIN_MAX_PER_IP    = 5;
+// Cinco tentativas eram poucas para quem opera a loja sozinho: errar a
+// senha algumas vezes no celular ja trancava o dono do lado de fora por
+// 15 minutos. Oito continua barrando ataque -- sao 32 tentativas por
+// hora, nada diante de uma senha de 10 caracteres -- e da folga para o
+// erro humano. O limite por e-mail e a janela nao mudam.
+const LOGIN_MAX_PER_IP    = 8;
 const LOGIN_MAX_PER_EMAIL = 20;
 const LOGIN_WINDOW_MIN    = 15;
 const LOGIN_KEEP_HOURS    = 24;
