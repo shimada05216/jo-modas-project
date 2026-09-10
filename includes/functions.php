@@ -79,7 +79,24 @@ function base_url(string $path = ''): string
 
 function asset_url(string $path): string
 {
-    return base_url('assets/' . ltrim($path, '/'));
+    $rel = ltrim($path, '/');
+    $url = base_url('assets/' . $rel);
+
+    // O navegador guarda CSS, JS e imagens por muito tempo. Depois de
+    // publicar uma versao nova ele continuava servindo o arquivo velho,
+    // e a loja aparecia com as cores antigas mesmo com os arquivos ja
+    // trocados no servidor.
+    //
+    // A data de modificacao do arquivo entra no endereco: trocou o
+    // arquivo, mudou o endereco, e o navegador busca de novo sozinho.
+    // Enquanto nada muda, o endereco e o mesmo e o cache continua valendo.
+    $file = ROOT_PATH . '/assets/' . $rel;
+
+    if (is_file($file)) {
+        $url .= (strpos($url, '?') === false ? '?' : '&') . 'v=' . filemtime($file);
+    }
+
+    return $url;
 }
 
 /**
