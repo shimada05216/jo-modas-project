@@ -54,6 +54,10 @@
     --alerta-br:  #ecdcb4;
     --alerta-tx:  #8a5a00;
 
+    /* Recuo lateral unico. Cabecalho, conteudo, servicos e rodape usam
+       este valor, entao a borda esquerda de tudo cai na mesma linha. */
+    --gutter:     16px;
+
     --raio:       4px;
     --raio-g:     10px;
     --larg:       1200px;
@@ -115,7 +119,7 @@ h1, h2, h3 { margin: 0; line-height: 1.18; font-weight: 600; }
 .hdr-bar {
     max-width: var(--larg);
     margin: 0 auto;
-    padding: 6px 10px;
+    padding: 6px var(--gutter);
     display: grid;
     grid-template-columns: 44px 1fr 44px;
     align-items: center;
@@ -307,7 +311,7 @@ body.menu-open .nav { transform: translateX(0); visibility: visible; }
 .site-main {
     max-width: var(--larg);
     margin: 0 auto;
-    padding: 18px 16px 56px;
+    padding: 18px var(--gutter) 56px;
 }
 
 .crumb { margin-bottom: 18px; font-size: 13px; color: var(--tinta-suave); }
@@ -905,7 +909,7 @@ body.menu-open .nav { transform: translateX(0); visibility: visible; }
 .servicos-grid {
     max-width: var(--larg);
     margin: 0 auto;
-    padding: 26px 16px;
+    padding: 26px var(--gutter);
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 20px 14px;
@@ -930,9 +934,9 @@ body.menu-open .nav { transform: translateX(0); visibility: visible; }
 .servico b { display: block; font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
 .servico span { font-size: 12px; color: var(--tinta-suave); }
 
-.ftr { padding: 38px 16px 22px; background: var(--branco); }
+.ftr { padding: 38px 0 22px; background: var(--branco); }
 
-.ftr-grid { max-width: var(--larg); margin: 0 auto; display: grid; gap: 28px; }
+.ftr-grid { max-width: var(--larg); margin: 0 auto; padding-inline: var(--gutter); display: grid; gap: 28px; }
 
 .ftr-logo img { height: 46px; width: auto; }
 
@@ -974,7 +978,7 @@ body.menu-open .nav { transform: translateX(0); visibility: visible; }
 .ftr-bottom {
     max-width: var(--larg);
     margin: 30px auto 0;
-    padding-top: 18px;
+    padding: 18px var(--gutter) 0;
     border-top: 1px solid var(--linha);
     font-size: 12px;
     color: var(--tinta-suave);
@@ -993,7 +997,7 @@ body.menu-open .nav { transform: translateX(0); visibility: visible; }
     .card-name { font-size: 15px; }
     .card-buy  { font-size: 13px; }
 
-    .servicos-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); padding: 30px 20px; }
+    .servicos-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); padding: 30px var(--gutter); }
 
     .cart-row { grid-template-columns: 100px 1fr auto; align-items: center; }
     .cart-row img { width: 100px; height: 126px; }
@@ -1008,7 +1012,7 @@ body.menu-open .nav { transform: translateX(0); visibility: visible; }
     }
 
     .ftr-grid { grid-template-columns: 1.4fr 1fr 1fr; }
-    .ftr { padding: 42px 20px 24px; }
+    .ftr { padding: 42px 0 24px; }
 }
 
 /* ============================================================
@@ -1018,11 +1022,19 @@ body.menu-open .nav { transform: translateX(0); visibility: visible; }
    ============================================================ */
 
 @media (min-width: 900px) {
+    /* No desktop o recuo cresce, mas continua sendo UM valor so:
+       cabecalho, conteudo, servicos e rodape acompanham juntos. */
+    :root { --gutter: 24px; }
+
     .hdr-bar {
+        /* Uma linha so: logo a esquerda, menu no meio, carrinho a direita.
+           Antes o menu era irmao da barra e caia numa segunda faixa. */
         grid-template-columns: auto 1fr auto;
         gap: 24px;
-        padding: 12px 24px;
+        padding: 12px var(--gutter);
     }
+
+    .hdr-cart { justify-self: end; }
 
     .hdr-burger, .hdr-scrim { display: none; }
     .hdr-logo { justify-self: start; }

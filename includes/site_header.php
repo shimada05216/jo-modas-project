@@ -32,7 +32,7 @@ $navItems   = active_categories();
     <?php if ($metaDesc !== ''): ?>
         <meta name="description" content="<?= e($metaDesc) ?>">
     <?php endif; ?>
-    <meta name="theme-color" content="#e65875">
+    <meta name="theme-color" content="#111111">
     <link rel="icon" href="<?= e(asset_url('images/logo.svg')) ?>">
     <link rel="stylesheet" href="<?= e(asset_url('css/site.css')) ?>">
 </head>
@@ -52,6 +52,54 @@ $navItems   = active_categories();
                  alt="<?= e($storeName) ?> - moda feminina" width="300" height="78">
         </a>
 
+        <?php
+        /**
+         * A mesma lista serve de gaveta no celular e de barra com submenu no
+         * desktop. No celular as categorias aparecem ja abertas, para nao
+         * exigir dois toques; no desktop viram um menu suspenso.
+         */
+        ?>
+        <nav class="nav" id="menu-drawer" aria-label="Categorias">
+            <div class="nav-head">
+                <span>Menu</span>
+                <button type="button" class="nav-close" id="menu-close" aria-label="Fechar menu">&times;</button>
+            </div>
+    
+            <ul class="nav-list">
+                <li>
+                    <a href="<?= e(base_url('index.php')) ?>"
+                       class="nav-link <?= $activeSlug === '' ? 'is-active' : '' ?>">Início</a>
+                </li>
+    
+                <?php if ($navItems !== []): ?>
+                    <li class="nav-drop">
+                        <button type="button" class="nav-link nav-drop-toggle" id="cat-toggle"
+                                aria-expanded="false" aria-controls="cat-submenu">
+                            Categorias
+                            <svg class="nav-chevron" viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="m7 10 5 5 5-5"/>
+                            </svg>
+                        </button>
+    
+                        <ul class="nav-sub" id="cat-submenu">
+                            <?php foreach ($navItems as $item): ?>
+                                <li>
+                                    <a href="<?= e(base_url('categoria.php?slug=' . rawurlencode($item['slug']))) ?>"
+                                       class="<?= $activeSlug === $item['slug'] ? 'is-active' : '' ?>">
+                                        <?= e($item['name']) ?>
+                                    </a>
+                                </li>
+                            <?php endforeach; ?>
+                        </ul>
+                    </li>
+                <?php endif; ?>
+    
+                <li>
+                    <a href="<?= e(base_url('carrinho.php')) ?>" class="nav-link">Carrinho</a>
+                </li>
+            </ul>
+        </nav>
+
         <a class="hdr-cart" href="<?= e(base_url('carrinho.php')) ?>" aria-label="Ver carrinho">
             <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
                 <path d="M6 7h12l-1.2 11.1a2 2 0 0 1-2 1.9H9.2a2 2 0 0 1-2-1.9L6 7Z"/>
@@ -60,54 +108,6 @@ $navItems   = active_categories();
             <span class="hdr-cart-count" id="cart-count" hidden>0</span>
         </a>
     </div>
-
-    <?php
-    /**
-     * A mesma lista serve de gaveta no celular e de barra com submenu no
-     * desktop. No celular as categorias aparecem ja abertas, para nao
-     * exigir dois toques; no desktop viram um menu suspenso.
-     */
-    ?>
-    <nav class="nav" id="menu-drawer" aria-label="Categorias">
-        <div class="nav-head">
-            <span>Menu</span>
-            <button type="button" class="nav-close" id="menu-close" aria-label="Fechar menu">&times;</button>
-        </div>
-
-        <ul class="nav-list">
-            <li>
-                <a href="<?= e(base_url('index.php')) ?>"
-                   class="nav-link <?= $activeSlug === '' ? 'is-active' : '' ?>">Início</a>
-            </li>
-
-            <?php if ($navItems !== []): ?>
-                <li class="nav-drop">
-                    <button type="button" class="nav-link nav-drop-toggle" id="cat-toggle"
-                            aria-expanded="false" aria-controls="cat-submenu">
-                        Categorias
-                        <svg class="nav-chevron" viewBox="0 0 24 24" aria-hidden="true">
-                            <path d="m7 10 5 5 5-5"/>
-                        </svg>
-                    </button>
-
-                    <ul class="nav-sub" id="cat-submenu">
-                        <?php foreach ($navItems as $item): ?>
-                            <li>
-                                <a href="<?= e(base_url('categoria.php?slug=' . rawurlencode($item['slug']))) ?>"
-                                   class="<?= $activeSlug === $item['slug'] ? 'is-active' : '' ?>">
-                                    <?= e($item['name']) ?>
-                                </a>
-                            </li>
-                        <?php endforeach; ?>
-                    </ul>
-                </li>
-            <?php endif; ?>
-
-            <li>
-                <a href="<?= e(base_url('carrinho.php')) ?>" class="nav-link">Carrinho</a>
-            </li>
-        </ul>
-    </nav>
 </header>
 
 <div class="hdr-scrim" id="menu-scrim" hidden></div>
