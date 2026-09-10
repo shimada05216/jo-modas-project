@@ -162,7 +162,7 @@ function render_error_page(string $detail): void
        . '<title>Erro - Jo Modas</title><style>'
        . 'body{font-family:"Segoe UI",Arial,sans-serif;max-width:820px;margin:40px auto;'
        . 'padding:0 20px;color:#23262b;line-height:1.5}'
-       . 'h1{color:#b02a5b;font-size:22px}'
+       . 'h1{color:#b3261e;font-size:22px}'
        . 'pre{background:#1f2430;color:#e6e6e6;padding:16px;border-radius:8px;'
        . 'overflow-x:auto;font-size:13px;white-space:pre-wrap;word-break:break-word}'
        . '.hint{color:#6b7280;font-size:14px}'
