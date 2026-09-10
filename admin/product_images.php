@@ -311,7 +311,7 @@ require __DIR__ . '/includes/header.php';
         <input type="file" name="images[]" multiple
                accept="image/jpeg,image/png,image/webp" required>
         <span class="field-hint">
-            JPG, PNG ou WEBP, até <?= e((string) round(MAX_UPLOAD_SIZE / 1048576)) ?> MB cada.
+            JPG, PNG ou WEBP, até <?= e(format_bytes(effective_upload_limit())) ?> cada.
             Maximo de <?= e((string) MAX_IMAGES_PER_PRODUCT) ?> imagens por produto
             (<?= e((string) count($images)) ?> já enviadas).
         </span>

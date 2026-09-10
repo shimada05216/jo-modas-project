@@ -309,9 +309,16 @@
         }
 
         var cfg      = window.JOMODAS_ADMIN || {};
-        var maxBytes = Number(cfg.maxUpload) || 0;
+        var maxBytes = Number(cfg.maxUpload) || 0;   // por arquivo, limite REAL do servidor
+        var maxPost  = Number(cfg.maxPost) || 0;     // total da requisicao
         var maxFiles = Number(cfg.maxImages) || 0;
         var tipos    = ['image/jpeg', 'image/png', 'image/webp'];
+
+        function tamanho(bytes) {
+            return bytes >= 1048576
+                ? String(Math.round(bytes / 1048576 * 10) / 10).replace('.', ',') + ' MB'
+                : Math.round(bytes / 1024) + ' KB';
+        }
 
         // Aceita 199,90 / 1.234,56 / 199 -- a mesma folga do parse_price.
         function toNumber(text) {
@@ -377,8 +384,12 @@
                     return;
                 }
 
+                var soma = 0;
+
                 for (var i = 0; i < arqs.files.length; i++) {
                     var f = arqs.files[i];
+
+                    soma += f.size;
 
                     if (f.type && tipos.indexOf(f.type) === -1) {
                         event.preventDefault();
@@ -388,10 +399,24 @@
 
                     if (maxBytes > 0 && f.size > maxBytes) {
                         event.preventDefault();
-                        falhar(arqs, '"' + f.name + '" passa do limite de '
-                            + Math.round(maxBytes / 1048576) + ' MB.');
+                        falhar(arqs, '"' + f.name + '" excede o limite permitido pelo '
+                            + 'servidor (' + tamanho(maxBytes) + ').');
                         return;
                     }
+                }
+
+                // Cada arquivo pode caber sozinho e o envio estourar mesmo
+                // assim. Passando de post_max_size o PHP descarta a
+                // requisicao inteira antes de qualquer validacao: o
+                // formulario voltaria em branco, sem explicacao nenhuma.
+                // A margem de 5% cobre os outros campos e o cabecalho do
+                // multipart, que tambem contam no total.
+                if (maxPost > 0 && soma > maxPost * 0.95) {
+                    event.preventDefault();
+                    falhar(arqs, 'As imagens somam ' + tamanho(soma) + ' e o servidor '
+                        + 'aceita no máximo ' + tamanho(maxPost) + ' por envio. '
+                        + 'Envie menos imagens de cada vez.');
+                    return;
                 }
             }
 
