@@ -234,8 +234,18 @@ if (is_post()) {
         $rowStock = trim((string) ($row['stock'] ?? ''));
         $rowId    = filter_var($row['id'] ?? '', FILTER_VALIDATE_INT);
 
-        // Linha em branco: o usuario adicionou e desistiu.
-        if ($rowColor === '' && $rowSize === '' && $rowSku === '' && $rowStock === '') {
+        // Linha em branco: ou o usuario adicionou e desistiu, ou e a linha
+        // que o formulario ja mostra pronta e ele nem tocou.
+        //
+        // O estoque conta como vazio quando e '' OU '0': a linha nasce com
+        // zero preenchido, e exigir '' aqui fazia a linha intocada parecer
+        // uma variacao de verdade. O cadastro entao recusava com "Toda
+        // variacao precisa de cor e tamanho", o navegador limpava os
+        // arquivos escolhidos, e quem tentasse de novo salvava o produto
+        // sem as imagens. Variacao e opcional: linha vazia simplesmente sai.
+        $rowStockEmpty = $rowStock === '' || $rowStock === '0';
+
+        if ($rowColor === '' && $rowSize === '' && $rowSku === '' && $rowStockEmpty) {
             continue;
         }
 
@@ -576,7 +586,7 @@ if (is_post()) {
             }
 
             flash('success', $isEdit ? 'Produto atualizado.' : 'Produto criado.');
-            redirect(base_url('admin/product_form.php?id=' . $productId));
+            redirect(base_url('admin/products.php'));
         }
     }
 }
@@ -743,10 +753,12 @@ require __DIR__ . '/includes/header.php';
     </section>
 
     <section class="form-card">
-        <h2 class="form-section">Variações e estoque</h2>
+        <h2 class="form-section">Variações e estoque (opcional)</h2>
         <p class="field-hint">
-            O estoque pertence à combinação de cor e tamanho. Sem nenhuma
-            variação com estoque, o produto não pode ser comprado.
+            Deixe em branco se a peça não tem cor e tamanho para escolher:
+            o produto é vendido assim mesmo. Se preencher, cada linha precisa
+            de <strong>cor e tamanho</strong> juntos, e o estoque passa a
+            pertencer a essa combinação.
         </p>
 
         <div id="variant-rows">
