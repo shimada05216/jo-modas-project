@@ -285,10 +285,158 @@
         }
     }
 
+    // ---------------------------------------------------------
+    // Conferencia antes de enviar
+    //
+    // Nome, categoria e preco ja sao obrigatorios pelo proprio HTML.
+    // Aqui ficam as regras que o HTML nao sabe expressar: preco valido,
+    // promocional menor que o normal, limites dos arquivos e linha de
+    // variacao preenchida pela metade.
+    //
+    // O motivo de existir: quando o servidor recusa, o navegador limpa
+    // os arquivos ja escolhidos -- e obrigado a isso, por seguranca --
+    // e quem salva de novo grava o produto sem as imagens. Barrando o
+    // erro previsivel ANTES do envio, a selecao de arquivos sobrevive.
+    //
+    // Isto NAO substitui a validacao do servidor, que continua inteira.
+    // ---------------------------------------------------------
+
+    function initFormCheck() {
+        var form = document.getElementById('product-form');
+
+        if (!form) {
+            return;
+        }
+
+        var cfg      = window.JOMODAS_ADMIN || {};
+        var maxBytes = Number(cfg.maxUpload) || 0;
+        var maxFiles = Number(cfg.maxImages) || 0;
+        var tipos    = ['image/jpeg', 'image/png', 'image/webp'];
+
+        // Aceita 199,90 / 1.234,56 / 199 -- a mesma folga do parse_price.
+        function toNumber(text) {
+            var limpo = String(text).trim().replace(/\s/g, '');
+
+            if (limpo === '' || !/^[0-9.,]+$/.test(limpo)) {
+                return null;
+            }
+
+            // A virgula manda: se existe, o que vem depois e centavo.
+            if (limpo.indexOf(',') !== -1) {
+                limpo = limpo.replace(/\./g, '').replace(',', '.');
+            } else if (/^[0-9]{1,3}(\.[0-9]{3})+$/.test(limpo)) {
+                limpo = limpo.replace(/\./g, '');   // 1.234 e milhar, nao decimal
+            }
+
+            var n = Number(limpo);
+
+            return isFinite(n) ? n : null;
+        }
+
+        function falhar(campo, mensagem) {
+            campo.setCustomValidity(mensagem);
+            campo.reportValidity();
+            campo.focus();
+        }
+
+        form.addEventListener('submit', function (event) {
+            var preco = form.querySelector('[name="price"]');
+            var promo = form.querySelector('[name="promo_price"]');
+            var arqs  = form.querySelector('input[type="file"]');
+
+            [preco, promo].forEach(function (c) { if (c) { c.setCustomValidity(''); } });
+
+            var vPreco = preco ? toNumber(preco.value) : null;
+
+            if (preco && preco.value.trim() !== '' && (vPreco === null || vPreco <= 0)) {
+                event.preventDefault();
+                falhar(preco, 'Informe um preço válido e maior que zero, por exemplo 199,90.');
+                return;
+            }
+
+            if (promo && promo.value.trim() !== '') {
+                var vPromo = toNumber(promo.value);
+
+                if (vPromo === null || vPromo <= 0) {
+                    event.preventDefault();
+                    falhar(promo, 'Preço promocional inválido. Deixe em branco se não houver.');
+                    return;
+                }
+
+                if (vPreco !== null && vPromo >= vPreco) {
+                    event.preventDefault();
+                    falhar(promo, 'O preço promocional precisa ser menor que o preço normal.');
+                    return;
+                }
+            }
+
+            if (arqs && arqs.files && arqs.files.length > 0) {
+                if (maxFiles > 0 && arqs.files.length > maxFiles) {
+                    event.preventDefault();
+                    falhar(arqs, 'Escolha no máximo ' + maxFiles + ' imagens.');
+                    return;
+                }
+
+                for (var i = 0; i < arqs.files.length; i++) {
+                    var f = arqs.files[i];
+
+                    if (f.type && tipos.indexOf(f.type) === -1) {
+                        event.preventDefault();
+                        falhar(arqs, '"' + f.name + '" não é JPG, PNG ou WEBP.');
+                        return;
+                    }
+
+                    if (maxBytes > 0 && f.size > maxBytes) {
+                        event.preventDefault();
+                        falhar(arqs, '"' + f.name + '" passa do limite de '
+                            + Math.round(maxBytes / 1048576) + ' MB.');
+                        return;
+                    }
+                }
+            }
+
+            // Linha de variacao pela metade. Linha totalmente vazia e
+            // ignorada aqui e no servidor: variacao e opcional.
+            var linhas = form.querySelectorAll('.variant-line');
+
+            for (var j = 0; j < linhas.length; j++) {
+                var cor = linhas[j].querySelector('[name$="[color]"]');
+                var tam = linhas[j].querySelector('[name$="[size]"]');
+                var est = linhas[j].querySelector('[name$="[stock]"]');
+                var sku = linhas[j].querySelector('[name$="[sku]"]');
+
+                if (!cor || !tam) { continue; }
+
+                var c = cor.value.trim(), t = tam.value.trim();
+                var s = est ? est.value.trim() : '';
+                var k = sku ? sku.value.trim() : '';
+
+                if (c === '' && t === '' && k === '' && (s === '' || s === '0')) {
+                    continue;   // intocada
+                }
+
+                if (c === '' || t === '') {
+                    event.preventDefault();
+                    falhar(c === '' ? cor : tam,
+                        'Preencha cor e tamanho juntos, ou limpe a linha inteira.');
+                    return;
+                }
+            }
+        });
+
+        // Mensagem propria sai assim que a pessoa corrige o campo.
+        form.addEventListener('input', function (event) {
+            if (event.target && event.target.setCustomValidity) {
+                event.target.setCustomValidity('');
+            }
+        });
+    }
+
     document.addEventListener('DOMContentLoaded', function () {
         initSidebar();
         initSlug();
         initVariants();
         initCategoryModal();
+        initFormCheck();
     });
 }());

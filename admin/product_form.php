@@ -634,8 +634,7 @@ require __DIR__ . '/includes/header.php';
 </datalist>
 
 <form method="post" enctype="multipart/form-data" id="product-form"
-      action="<?= e(base_url('admin/product_form.php' . ($isEdit ? '?id=' . (int) $id : ''))) ?>"
-      novalidate>
+      action="<?= e(base_url('admin/product_form.php' . ($isEdit ? '?id=' . (int) $id : ''))) ?>">
     <?= csrf_field() ?>
 
     <section class="form-card">
@@ -882,7 +881,12 @@ require __DIR__ . '/includes/header.php';
     window.JOMODAS_ADMIN = {
         categoryEndpoint: <?= json_encode(base_url('admin/ajax_category.php'), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>,
         csrf: <?= json_encode(csrf_token(), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>,
-        slugAuto: <?= $isEdit ? 'false' : 'true' ?>
+        slugAuto: <?= $isEdit ? 'false' : 'true' ?>,
+
+        // Mesmos limites que o servidor aplica. Aqui servem so para
+        // avisar antes do envio; quem decide continua sendo o PHP.
+        maxUpload: <?= (int) MAX_UPLOAD_SIZE ?>,
+        maxImages: <?= (int) MAX_IMAGES_PER_PRODUCT ?>
     };
 </script>
 
