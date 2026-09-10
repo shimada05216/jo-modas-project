@@ -626,7 +626,12 @@
 
         var opts = document.createElement('p');
         opts.className = 'cart-options';
-        opts.textContent = item.color + ' / ' + item.size;
+        // Linha de produto nao tem cor nem tamanho: sem isto sobrava uma
+        // barra solta no carrinho.
+        var partes = [item.color, item.size].filter(function (v) { return v; });
+
+        opts.textContent = partes.join(' / ');
+        opts.hidden = partes.length === 0;
         info.appendChild(opts);
 
         var unit = document.createElement('p');
