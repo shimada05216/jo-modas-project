@@ -655,18 +655,37 @@ function require_setup_access(): void
 /**
  * Regra de VISIBILIDADE do produto na loja.
  *
- * Aparece quem tem ao menos uma variacao ativa com estoque, ou quem
- * esta marcado com show_without_stock. Visibilidade e disponibilidade
- * sao coisas separadas: este trecho decide apenas se o produto entra
- * na listagem, nunca se da para comprar.
+ * Depende do modo de compra (REQUIRE_VARIANT_SELECTION):
+ *
+ * ESTRITO: aparece quem tem ao menos uma variacao ativa com estoque, ou
+ *   quem esta marcado com show_without_stock. Faz sentido porque so se
+ *   compra escolhendo cor e tamanho: sem variacao vendavel nao ha o que
+ *   comprar, e o marcador serve para expor a peca mesmo assim.
+ *
+ * SIMPLES: aparece todo produto ativo. Aqui variacao e opcional, entao
+ *   "sem variacao com estoque" nao quer mais dizer "sem nada a vender" --
+ *   uma peca cadastrada sem cor e tamanho e vendavel do mesmo jeito.
+ *   Manter a regra antiga esconderia justamente os produtos simples que o
+ *   lojista acabou de cadastrar.
+ *
+ * Em nenhum dos dois isto decide se da para comprar; so se o produto
+ * entra na listagem. A coluna show_without_stock nao muda de significado
+ * nem de valor: ela continua sendo o que abre excecao no modo estrito.
  */
-const PRODUCT_VISIBLE_SQL = '(
+function product_visible_sql(): string
+{
+    if (!REQUIRE_VARIANT_SELECTION) {
+        return '1';
+    }
+
+    return '(
             p.show_without_stock = 1
             OR EXISTS (
                 SELECT 1 FROM product_variants pv2
                  WHERE pv2.product_id = p.id AND pv2.active = 1 AND pv2.stock > 0
             )
         )';
+}
 
 /**
  * Categorias ativas, na ordem definida no painel.
@@ -740,7 +759,7 @@ function showcase_products(
           -- c.active também entra: desativar uma categoria no painel deve
           -- tirar os produtos dela da loja, e não apenas some-la do menu.
           WHERE p.active = 1 AND c.active = 1
-            AND ' . PRODUCT_VISIBLE_SQL . '
+            AND ' . product_visible_sql() . '
             AND ' . $conditions[$filter] . '
           ORDER BY p.created_at DESC, p.id DESC
           LIMIT ' . $limit . ' OFFSET ' . $offset
@@ -761,7 +780,7 @@ function count_active_products(): int
            FROM products p
            JOIN categories c ON c.id = p.category_id
           WHERE p.active = 1 AND c.active = 1
-            AND ' . PRODUCT_VISIBLE_SQL
+            AND ' . product_visible_sql()
     )->fetchColumn();
 }
 
@@ -777,7 +796,7 @@ function count_category_products(int $categoryId): int
            FROM products p
            JOIN categories c ON c.id = p.category_id
           WHERE p.category_id = ? AND p.active = 1 AND c.active = 1
-            AND ' . PRODUCT_VISIBLE_SQL
+            AND ' . product_visible_sql()
     );
     $stmt->execute([$categoryId]);
 

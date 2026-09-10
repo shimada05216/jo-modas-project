@@ -578,6 +578,8 @@ body.menu-open .nav { transform: translateX(0); visibility: visible; }
 .card-buy {
     display: block;
     min-height: 42px;
+    width: 100%;
+    cursor: pointer;
     padding: 11px 12px;
     border: 0;
     border-radius: var(--raio);
@@ -593,6 +595,10 @@ body.menu-open .nav { transform: translateX(0); visibility: visible; }
 }
 
 .card-buy:hover { background: var(--color-primary-dark); }
+
+/* Retorno do "Comprar" do cartao no modo simples: o botao confirma
+   sozinho, sem tirar a pessoa da vitrine. */
+.card-buy.is-added { background: var(--color-accent-dark); }
 
 .card-buy.is-disabled {
     background: var(--areia-forte);

@@ -98,6 +98,23 @@ foreach ($variants as $variant) {
     }
 }
 
+// Modo de compra. Ver REQUIRE_VARIANT_SELECTION em config.php.
+//
+// ESTRITO (true): so compra quem escolher cor e tamanho com estoque. E o
+//   comportamento antigo, e um produto sem nada vendavel vira
+//   "Indisponivel no momento" com consulta pelo WhatsApp.
+//
+// SIMPLES (false): comprar e manifestar interesse; a disponibilidade final
+//   se confirma na conversa do WhatsApp. Entao todo produto que esta
+//   visivel pode ser comprado, com ou sem variacao. As variacoes, quando
+//   existem, continuam aparecendo e podem ser escolhidas -- e ai o estoque
+//   daquela combinacao volta a valer.
+//
+// Em nenhum dos dois o estoque baixa sozinho.
+$strictVariants = REQUIRE_VARIANT_SELECTION;
+$hasVariants    = $variants !== [];
+$canBuy         = $strictVariants ? $hasSellable : true;
+
 // Numero da loja para o "consultar disponibilidade". Vazio esconde o botao.
 $consultWhatsapp = store_whatsapp_number();
 $consultText     = 'Olá! Tenho interesse no produto "' . $product['name']
@@ -111,6 +128,8 @@ $payload = [
     'name'     => $product['name'],
     'slug'     => $product['slug'],
     'price'    => round($price, 2),
+    // Diz ao JS se cor e tamanho sao exigidos. Ver REQUIRE_VARIANT_SELECTION.
+    'strict'   => $strictVariants,
     'image'    => $images !== [] ? product_image_url($images[0]) : product_image_url(null),
     // Numero e saudacao para o botao "comprar agora", que fala com o
     // WhatsApp sem passar pelo carrinho.
@@ -192,7 +211,7 @@ require __DIR__ . '/includes/site_header.php';
             <p class="product-short"><?= e($product['short_description']) ?></p>
         <?php endif; ?>
 
-        <?php if (!$hasSellable): ?>
+        <?php if (!$canBuy): ?>
 
             <?php
             /*
@@ -219,39 +238,58 @@ require __DIR__ . '/includes/site_header.php';
 
             <form class="buy-form" id="buy-form" novalidate>
 
-                <div class="option-block">
-                    <span class="option-label">Cor</span>
-                    <div class="option-list" id="color-list">
-                        <?php foreach ($colors as $color): ?>
-                            <button type="button" class="option" data-color="<?= e($color) ?>">
-                                <?= e($color) ?>
-                            </button>
-                        <?php endforeach; ?>
+                <?php
+                /*
+                 * No modo simples os seletores so aparecem se o produto
+                 * realmente tem variacao cadastrada, e vao marcados como
+                 * opcionais. Nada e escolhido por conta propria: quem nao
+                 * mexer neles compra o produto sem cor nem tamanho.
+                 */
+                ?>
+                <?php if ($hasVariants): ?>
+                    <div class="option-block">
+                        <span class="option-label">
+                            Cor<?= $strictVariants ? '' : ' (opcional)' ?>
+                        </span>
+                        <div class="option-list" id="color-list">
+                            <?php foreach ($colors as $color): ?>
+                                <button type="button" class="option" data-color="<?= e($color) ?>">
+                                    <?= e($color) ?>
+                                </button>
+                            <?php endforeach; ?>
+                        </div>
                     </div>
-                </div>
 
-                <div class="option-block">
-                    <span class="option-label">Tamanho</span>
-                    <div class="option-list" id="size-list">
-                        <span class="option-empty">Escolha uma cor primeiro.</span>
+                    <div class="option-block">
+                        <span class="option-label">
+                            Tamanho<?= $strictVariants ? '' : ' (opcional)' ?>
+                        </span>
+                        <div class="option-list" id="size-list">
+                            <span class="option-empty">Escolha uma cor primeiro.</span>
+                        </div>
                     </div>
-                </div>
 
-                <p class="stock-line" id="stock-line" aria-live="polite">
-                    Escolha cor e tamanho para ver a disponibilidade.
-                </p>
+                    <p class="stock-line" id="stock-line" aria-live="polite">
+                        <?= $strictVariants
+                            ? 'Escolha cor e tamanho para ver a disponibilidade.'
+                            : 'Escolha cor e tamanho se quiser combinar o pedido.' ?>
+                    </p>
+                <?php endif; ?>
 
                 <div class="qty-block">
                     <label class="option-label" for="qty">Quantidade</label>
-                    <input type="number" id="qty" value="1" min="1" step="1" disabled>
+                    <input type="number" id="qty" value="1" min="1" step="1"
+                           <?= $strictVariants ? 'disabled' : '' ?>>
                 </div>
 
-                <button type="submit" class="btn-buy" id="add-to-cart" disabled>
+                <button type="submit" class="btn-buy" id="add-to-cart"
+                        <?= $strictVariants ? 'disabled' : '' ?>>
                     Adicionar ao carrinho
                 </button>
 
                 <?php /* Peça única: fala com o WhatsApp direto, sem passar pelo carrinho. */ ?>
-                <button type="button" class="btn-buy btn-buy-now" id="buy-now" disabled>
+                <button type="button" class="btn-buy btn-buy-now" id="buy-now"
+                        <?= $strictVariants ? 'disabled' : '' ?>>
                     Comprar agora
                 </button>
 

@@ -98,3 +98,22 @@ define('FORCE_HTTPS', false);
 //        os dois arquivos assim que terminar a instalacao.
 // ---------------------------------------------------------
 define('INSTALL_KEY', '');
+
+// ---------------------------------------------------------
+// Exigir escolha de cor e tamanho para comprar
+//
+// false: COMPRA SIMPLES (padrao). O cliente pode adicionar o produto
+//        ao carrinho e finalizar pelo WhatsApp sem escolher cor nem
+//        tamanho. Se o produto tiver variacoes, elas continuam
+//        aparecendo como "Cor (opcional)" e "Tamanho (opcional)": quem
+//        quiser escolhe, e a escolha vai junto no pedido.
+//
+// true:  COMPRA ESTRITA. Volta o comportamento antigo: so compra quem
+//        escolher uma combinacao de cor e tamanho que tenha estoque, e
+//        o botao fica desligado ate a escolha ser valida.
+//
+// Para mudar depois, troque so esta linha e recarregue a loja. Nao
+// mexe em banco, nem em produto ja cadastrado, nem em carrinho que o
+// cliente ja tenha montado.
+// ---------------------------------------------------------
+define('REQUIRE_VARIANT_SELECTION', false);

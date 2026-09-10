@@ -5,21 +5,27 @@
  * Espera a variavel $card, uma linha vinda de showcase_products().
  * Usado pela home e pela listagem de categoria.
  *
- * O botao "Comprar" leva para a pagina do produto, e nao adiciona ao
- * carrinho direto: o que se vende e a combinacao cor + tamanho, e essa
- * escolha so existe la. Adicionar do cartao criaria um item sem
- * variacao definida.
+ * O que o botao "Comprar" faz depende de REQUIRE_VARIANT_SELECTION:
+ *
+ *   true  -> leva para a pagina do produto, porque o que se vende e a
+ *            combinacao cor + tamanho e essa escolha so existe la.
+ *   false -> adiciona o produto ao carrinho ali mesmo, sem cor nem
+ *            tamanho. Quem quiser escolher continua podendo abrir o
+ *            produto pela imagem, pelo nome ou pelo preco.
  *
  * A imagem e o elemento principal do cartao; tocar nela, no nome ou no
- * preco tambem abre o produto.
+ * preco sempre abre o produto, nos dois modos.
  */
 
 $cardPrice    = effective_price($card);
 $cardHasPromo = $cardPrice < (float) $card['price'];
 $cardSoldOut  = (int) $card['total_stock'] <= 0;
 $cardUrl      = base_url('produto.php?slug=' . rawurlencode($card['slug']));
+
+// No modo simples o cartao vende direto; no estrito, encaminha.
+$cardDirectBuy = !REQUIRE_VARIANT_SELECTION;
 ?>
-<article class="card<?= $cardSoldOut ? ' is-sold-out' : '' ?>">
+<article class="card<?= ($cardSoldOut && !$cardDirectBuy) ? " is-sold-out" : "" ?>">
     <a class="card-link" href="<?= e($cardUrl) ?>">
         <div class="card-media">
             <img src="<?= e(product_image_url($card['image'])) ?>"
@@ -58,7 +64,14 @@ $cardUrl      = base_url('produto.php?slug=' . rawurlencode($card['slug']));
                 </div>
             <?php endif; ?>
 
-            <?php if ($cardSoldOut): ?>
+            <?php
+            /*
+             * "Esgotado" so no modo estrito. No modo simples a compra e
+             * manifestacao de interesse e a peca continua vendavel, entao
+             * o selo diria o contrario do que o botao faz.
+             */
+            ?>
+            <?php if ($cardSoldOut && !$cardDirectBuy): ?>
                 <span class="card-out">Esgotado</span>
             <?php endif; ?>
         </div>
@@ -76,8 +89,23 @@ $cardUrl      = base_url('produto.php?slug=' . rawurlencode($card['slug']));
     </a>
 
     <?php // Fora do <a> acima: um link nao pode conter outro link. ?>
-    <?php if ($cardSoldOut): ?>
+    <?php if ($cardSoldOut && !$cardDirectBuy): ?>
         <span class="card-buy is-disabled" aria-disabled="true">Esgotado</span>
+    <?php elseif ($cardDirectBuy): ?>
+        <?php
+        /*
+         * Compra direta do cartao. Os dados vao nos data-*: o carrinho
+         * so precisa disso para montar a linha, e a pagina do carrinho
+         * reconfere tudo contra o banco antes de fechar o pedido.
+         */
+        ?>
+        <button type="button" class="card-buy js-card-buy"
+                data-product-id="<?= e((string) (int) $card['id']) ?>"
+                data-name="<?= e($card['name']) ?>"
+                data-price="<?= e(number_format($cardPrice, 2, '.', '')) ?>"
+                data-image="<?= e(product_image_url($card['image'])) ?>"
+                data-url="<?= e(absolute_url('produto.php?slug=' . rawurlencode($card['slug']))) ?>"
+                aria-label="Comprar <?= e($card['name']) ?>">Comprar</button>
     <?php else: ?>
         <a class="card-buy" href="<?= e($cardUrl) ?>"
            aria-label="Comprar <?= e($card['name']) ?>">Comprar</a>

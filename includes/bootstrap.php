@@ -73,6 +73,22 @@ if ($missing !== []) {
 unset($missing, $constant, $configFile);
 
 // ---------------------------------------------------------
+// Chaves opcionais
+//
+// Ficam com padrao aqui para que um config.php antigo, escrito antes
+// de elas existirem, continue funcionando sem ser editado.
+// ---------------------------------------------------------
+
+if (!defined('REQUIRE_VARIANT_SELECTION')) {
+    // false = compra simples: o cliente pode comprar sem escolher cor
+    //         e tamanho. As variacoes, quando existem, continuam a
+    //         aparecer e podem ser escolhidas -- so nao sao exigidas.
+    // true  = compra estrita: so compra quem escolher uma combinacao
+    //         de cor e tamanho com estoque.
+    define('REQUIRE_VARIANT_SELECTION', false);
+}
+
+// ---------------------------------------------------------
 // 3. Fuso horario
 // APP_TIMEZONE e opcional: config.php antigos definem o fuso
 // diretamente e continuam funcionando.

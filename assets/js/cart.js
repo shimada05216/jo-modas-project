@@ -16,11 +16,44 @@
     // Armazenamento
     // ---------------------------------------------------------
 
+    // O carrinho guarda dois tipos de linha:
+    //
+    //   variante -> variantId inteiro positivo. E a combinacao cor+tamanho,
+    //               como sempre foi, com estoque proprio.
+    //   produto  -> variantId ausente ou null. A pessoa comprou sem escolher
+    //               cor nem tamanho (ver REQUIRE_VARIANT_SELECTION).
+    //
+    // Os dois precisam de productId, que e o que amarra a linha ao produto
+    // de verdade. Carrinho antigo, gravado antes disto, so tem linhas de
+    // variante e continua valendo sem conversao.
     function isValidItem(item) {
-        return item
-            && typeof item === 'object'
-            && Number.isInteger(item.variantId) && item.variantId > 0
-            && Number.isInteger(item.qty) && item.qty > 0;
+        if (!item || typeof item !== 'object') {
+            return false;
+        }
+
+        if (!Number.isInteger(item.qty) || item.qty <= 0) {
+            return false;
+        }
+
+        if (!Number.isInteger(item.productId) || item.productId <= 0) {
+            return false;
+        }
+
+        // Sem variante e um caso legitimo; com variante ela precisa ser real.
+        if (item.variantId === null || item.variantId === undefined) {
+            return true;
+        }
+
+        return Number.isInteger(item.variantId) && item.variantId > 0;
+    }
+
+    // Identidade estavel da linha. Duas linhas se somam so quando apontam
+    // para a mesma coisa; produto solto nunca se mistura com variante, nem
+    // um produto com outro.
+    function itemKey(item) {
+        return (item.variantId === null || item.variantId === undefined)
+            ? 'product:' + item.productId
+            : 'variant:' + item.variantId;
     }
 
     function readCart() {
@@ -106,12 +139,41 @@
             buyNow.hidden = true;
         }
 
-        if (!form || !colorList || !sizeList) {
+        // Sem o formulario nao ha o que ligar. Ja os seletores de cor e
+        // tamanho podem simplesmente nao existir: produto sem variacao, ou
+        // modo de compra simples. Nesse caso o resto da pagina continua
+        // funcionando -- era aqui que a compra sem variacao morria.
+        if (!form) {
             return;
         }
 
+        // Modo estrito exige cor e tamanho. Na duvida (dado antigo, sem o
+        // campo), assume estrito: e o comportamento mais conservador.
+        var strict = data.strict !== false;
+
         var selectedColor = null;
         var selectedVariant = null;
+
+        // O que esta selecionado agora, do jeito que o carrinho entende.
+        // No modo simples, nao ter escolhido nada e uma resposta valida:
+        // vira uma linha de produto, sem cor, sem tamanho e sem estoque
+        // reservado. Nada e escolhido por conta propria.
+        function currentChoice() {
+            if (selectedVariant) {
+                return {
+                    variantId: selectedVariant.id,
+                    color: selectedVariant.color,
+                    size: selectedVariant.size,
+                    stock: selectedVariant.stock
+                };
+            }
+
+            if (strict) {
+                return null;
+            }
+
+            return { variantId: null, color: '', size: '', stock: null };
+        }
 
         function variantsForColor(color) {
             return data.variants.filter(function (variant) {
@@ -122,10 +184,14 @@
         function clearSelection() {
             selectedVariant = null;
             qtyInput.value = 1;
-            qtyInput.disabled = true;
-            addButton.disabled = true;
 
-            if (buyNow) { buyNow.disabled = true; }
+            // No modo simples a compra nunca depende da escolha, entao os
+            // controles seguem ligados mesmo sem cor e tamanho.
+            qtyInput.disabled = strict;
+            qtyInput.removeAttribute('max');
+            addButton.disabled = strict;
+
+            if (buyNow) { buyNow.disabled = strict; }
         }
 
         function renderSizes(color) {
@@ -198,11 +264,18 @@
                 : 'Todos os tamanhos desta cor estão esgotados.';
         }
 
-        Array.prototype.forEach.call(colorList.children, function (button) {
-            button.addEventListener('click', function () {
-                selectColor(button.dataset.color, button);
+        // Os seletores so existem quando o produto tem variacao. Sem eles a
+        // pagina segue: e a compra simples.
+        if (colorList && sizeList) {
+            Array.prototype.forEach.call(colorList.children, function (button) {
+                button.addEventListener('click', function () {
+                    selectColor(button.dataset.color, button);
+                });
             });
-        });
+        }
+
+        // Estado inicial: no modo simples ja nasce pronto para comprar.
+        clearSelection();
 
         // "Comprar agora" / peça única: monta a mensagem so com este item e
         // abre o WhatsApp, sem tocar no carrinho. Usa o mesmo buildMessage
@@ -211,7 +284,16 @@
         // Nada de estoque e alterado aqui, como em todo o resto do site.
         if (buyNow) {
             buyNow.addEventListener('click', function () {
-                if (!selectedVariant || selectedVariant.stock <= 0 || storeNumber.length < 10) {
+                var choice = currentChoice();
+
+                if (!choice || storeNumber.length < 10) {
+                    return;
+                }
+
+                // Variacao escolhida sem estoque nao passa. Sem variacao
+                // nao ha estoque a respeitar: e interesse no produto, e a
+                // disponibilidade se confirma na conversa.
+                if (choice.stock !== null && choice.stock <= 0) {
                     return;
                 }
 
@@ -221,16 +303,16 @@
                     qty = 1;
                 }
 
-                if (qty > selectedVariant.stock) {
-                    qty = selectedVariant.stock;
+                if (choice.stock !== null && qty > choice.stock) {
+                    qty = choice.stock;
                 }
 
                 var message = buildMessage([{
                     available: true,
                     qty: qty,
                     name: data.name,
-                    color: selectedVariant.color,
-                    size: selectedVariant.size,
+                    color: choice.color,
+                    size: choice.size,
                     price: data.price
                 }], data.greeting || 'Ola, gostaria de fazer este pedido:');
 
@@ -243,17 +325,15 @@
         }
 
         qtyInput.addEventListener('input', function () {
-            if (!selectedVariant) {
-                return;
-            }
-
             var value = parseInt(qtyInput.value, 10);
 
             if (!Number.isInteger(value) || value < 1) {
                 value = 1;
             }
 
-            if (value > selectedVariant.stock) {
+            // O teto so existe quando ha variacao escolhida. Sem ela nao se
+            // inventa estoque: a quantidade e um pedido, nao uma reserva.
+            if (selectedVariant && value > selectedVariant.stock) {
                 value = selectedVariant.stock;
             }
 
@@ -263,7 +343,13 @@
         form.addEventListener('submit', function (event) {
             event.preventDefault();
 
-            if (!selectedVariant || selectedVariant.stock <= 0) {
+            var choice = currentChoice();
+
+            if (!choice) {
+                return;
+            }
+
+            if (choice.stock !== null && choice.stock <= 0) {
                 return;
             }
 
@@ -274,10 +360,22 @@
             }
 
             var items = readCart();
+            var novo = {
+                variantId: choice.variantId,
+                productId: data.id,
+                name: data.name,
+                url: data.url,
+                image: data.image,
+                color: choice.color,
+                size: choice.size,
+                price: data.price,
+                qty: qty
+            };
+            var chave = itemKey(novo);
             var existing = null;
 
             for (var i = 0; i < items.length; i++) {
-                if (items[i].variantId === selectedVariant.id) {
+                if (itemKey(items[i]) === chave) {
                     existing = items[i];
                     break;
                 }
@@ -288,28 +386,20 @@
             if (existing) {
                 var wanted = existing.qty + qty;
 
-                if (wanted > selectedVariant.stock) {
-                    wanted = selectedVariant.stock;
-                    alreadyMaxed = existing.qty >= selectedVariant.stock;
+                // Teto so quando ha variacao: e o estoque dela que manda.
+                if (choice.stock !== null && wanted > choice.stock) {
+                    wanted = choice.stock;
+                    alreadyMaxed = existing.qty >= choice.stock;
                 }
 
                 existing.qty = wanted;
             } else {
-                if (qty > selectedVariant.stock) {
-                    qty = selectedVariant.stock;
+                if (choice.stock !== null && qty > choice.stock) {
+                    qty = choice.stock;
                 }
 
-                items.push({
-                    variantId: selectedVariant.id,
-                    productId: data.id,
-                    name: data.name,
-                    url: data.url,
-                    image: data.image,
-                    color: selectedVariant.color,
-                    size: selectedVariant.size,
-                    price: data.price,
-                    qty: qty
-                });
+                novo.qty = qty;
+                items.push(novo);
             }
 
             writeCart(items);
@@ -333,12 +423,21 @@
             return;
         }
 
-        var ids = items.map(function (item) { return item.variantId; });
+        // O servidor confere as duas coisas: variacoes e produtos soltos.
+        // "ids" continua indo com o mesmo nome de antes, para um carrinho
+        // antigo seguir sendo conferido igual.
+        var ids = items
+            .map(function (item) { return item.variantId; })
+            .filter(function (id) { return Number.isInteger(id) && id > 0; });
+
+        var productIds = items
+            .filter(function (item) { return item.variantId === null || item.variantId === undefined; })
+            .map(function (item) { return item.productId; });
 
         fetch(root.dataset.endpoint, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ ids: ids })
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ ids: ids, productIds: productIds })
         })
             .then(function (response) {
                 if (!response.ok) {
@@ -363,24 +462,27 @@
     function reconcile(localItems, serverItems) {
         var byId = {};
 
+        // Indexado pela mesma identidade das duas pontas, senao uma linha
+        // de produto e uma de variacao com numeros iguais se confundiriam.
         serverItems.forEach(function (item) {
-            byId[item.variantId] = item;
+            byId[itemKey(item)] = item;
         });
 
         var merged = [];
 
         localItems.forEach(function (localItem) {
-            var fresh = byId[localItem.variantId];
+            var fresh = byId[itemKey(localItem)];
 
-            // Variacao apagada no painel: sai do carrinho sem alarde.
+            // Variacao ou produto que saiu do ar: deixa o carrinho sem alarde.
             if (!fresh) {
                 return;
             }
 
             var qty = localItem.qty;
 
-            // Estoque caiu desde que o item entrou no carrinho.
-            if (fresh.available && qty > fresh.stock) {
+            // Estoque caiu desde que o item entrou no carrinho. So vale para
+            // linha de variacao: produto solto nao tem estoque reservado.
+            if (fresh.available && fresh.stock !== null && qty > fresh.stock) {
                 qty = fresh.stock;
             }
 
@@ -548,7 +650,10 @@
             var qty = document.createElement('input');
             qty.type = 'number';
             qty.min = '1';
-            qty.max = String(item.stock);
+            // Produto solto nao tem teto: nao existe estoque reservado nele.
+            if (item.stock !== null && item.stock !== undefined) {
+                qty.max = String(item.stock);
+            }
             qty.step = '1';
             qty.value = String(item.qty);
             qty.className = 'cart-qty';
@@ -560,7 +665,7 @@
                     value = 1;
                 }
 
-                if (value > item.stock) {
+                if (item.stock !== null && item.stock !== undefined && value > item.stock) {
                     value = item.stock;
                 }
 
@@ -648,8 +753,18 @@
             total += subtotal;
 
             lines.push(item.qty + 'x ' + item.name);
-            lines.push('Cor: ' + item.color);
-            lines.push('Tamanho: ' + item.size);
+
+            // Cor e tamanho so entram quando existem de verdade. Compra
+            // sem variacao nao inventa linha, e nunca sai "Cor: undefined"
+            // no pedido que chega ao lojista.
+            if (item.color) {
+                lines.push('Cor: ' + item.color);
+            }
+
+            if (item.size) {
+                lines.push('Tamanho: ' + item.size);
+            }
+
             lines.push('Valor: ' + money(item.price));
 
             // Com mais de uma peca o valor unitario sozinho nao fecha a
@@ -670,8 +785,77 @@
     // Inicio
     // =========================================================
 
+    // =========================================================
+    // Comprar direto do cartao (modo simples)
+    //
+    // O botao so existe quando REQUIRE_VARIANT_SELECTION e false. Toca,
+    // entra no carrinho, o contador do cabecalho sobe e o proprio botao
+    // avisa. Nao navega: quem quiser escolher cor e tamanho abre o
+    // produto pela imagem, pelo nome ou pelo preco.
+    // =========================================================
+
+    function initCardBuy() {
+        document.addEventListener('click', function (event) {
+            var botao = event.target.closest ? event.target.closest('.js-card-buy') : null;
+
+            if (!botao) {
+                return;
+            }
+
+            event.preventDefault();
+
+            var productId = parseInt(botao.dataset.productId, 10);
+
+            if (!Number.isInteger(productId) || productId <= 0) {
+                return;
+            }
+
+            var items = readCart();
+            var chave = 'product:' + productId;
+            var achou = false;
+
+            for (var i = 0; i < items.length; i++) {
+                if (itemKey(items[i]) === chave) {
+                    items[i].qty += 1;
+                    achou = true;
+                    break;
+                }
+            }
+
+            if (!achou) {
+                items.push({
+                    variantId: null,
+                    productId: productId,
+                    name: botao.dataset.name || '',
+                    url: botao.dataset.url || '',
+                    image: botao.dataset.image || '',
+                    color: '',
+                    size: '',
+                    price: Number(botao.dataset.price) || 0,
+                    qty: 1
+                });
+            }
+
+            writeCart(items);
+
+            // Retorno visivel, sem tirar a pessoa da vitrine.
+            var original = botao.dataset.rotulo || botao.textContent;
+
+            botao.dataset.rotulo = original;
+            botao.textContent = 'Adicionado';
+            botao.classList.add('is-added');
+
+            window.clearTimeout(botao._voltar);
+            botao._voltar = window.setTimeout(function () {
+                botao.textContent = botao.dataset.rotulo;
+                botao.classList.remove('is-added');
+            }, 1600);
+        });
+    }
+
     document.addEventListener('DOMContentLoaded', function () {
         updateBadge();
+        initCardBuy();
 
         var productData = document.getElementById('jm-product-data');
 
