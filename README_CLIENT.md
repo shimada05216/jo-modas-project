@@ -72,25 +72,26 @@ phpMyAdmin para importar nada.
 | `database/demo_data.sql` | **não importe** — insere produtos de demonstração |
 | `database/migration_001` a `004` | **não importe** — já foram aplicados |
 
-A `migration_004_show_without_stock.sql` foi aplicada na atualização
-anterior; ela continua no pacote apenas para quem for instalar do zero.
-Rodar de novo só produziria um erro de coluna duplicada — inofensivo,
-mas desnecessário.
+Esta atualização **não altera a estrutura do banco**. Os arquivos da pasta
+`database/` vêm no pacote apenas para quem for instalar a loja do zero;
+na sua loja, que já está no ar, eles não devem ser usados.
 
-Se quiser confirmar que ela já está aplicada, rode na aba **SQL** do
-phpMyAdmin:
+Se quiser apenas conferir que o banco está em dia, rode na aba **SQL** do
+phpMyAdmin — é só uma consulta, não altera nada:
 
 ```sql
 SHOW COLUMNS FROM `products` LIKE 'show_without_stock';
 ```
 
-Uma linha de resposta = tudo certo, não há nada a fazer. Nenhuma linha
-= importe **apenas** `database/migration_004_show_without_stock.sql`.
+Uma linha de resposta = tudo certo, não há nada a fazer. Se não aparecer
+nenhuma linha, **não importe nada por conta própria**: entre em contato
+com o suporte antes de continuar.
 
 ### 5. Abra a loja e confira
 
-Acesse o endereço da loja. Deve aparecer o logo em **preto e dourado**,
-a faixa de categorias e os produtos.
+Acesse o endereço da loja. O **topo do site deve estar preto**, com o logo
+em branco e dourado; o restante da página continua claro, com a faixa de
+categorias e os produtos.
 
 > **Continua com as cores antigas?** É o navegador guardando os arquivos
 > anteriores. Recarregue com **Ctrl + F5**, ou abra numa janela anônima.
@@ -100,8 +101,10 @@ a faixa de categorias e os produtos.
 ### 6. Teste o painel
 
 Entre em **Painel → Produtos → Novo produto** e cadastre uma peça com
-nome, categoria, preço e uma imagem, **sem preencher variação**. Deve
-salvar de uma vez e voltar para a lista com a imagem no lugar.
+nome, categoria, preço e uma foto grande em JPG, **sem preencher
+variação**. A tela deve mostrar a foto sendo otimizada; depois, ao salvar,
+o produto deve entrar de uma vez e voltar para a lista com a imagem no
+lugar.
 
 Depois teste o carrinho e o envio pelo WhatsApp.
 
@@ -119,12 +122,12 @@ A atualização termina aqui. Os passos numerados adiante são para
 
 ## Limite de tamanho das imagens
 
-**Pode escolher a foto direto do celular, do jeito que ela saiu da
-câmera.** Quando a imagem passa do limite do servidor, o próprio painel
-a reduz antes do envio: o lado maior fica com até 1920 px (bem mais do
-que a loja precisa para mostrar) e a foto é recomprimida até caber. Uma
-foto típica de celular, de 5 a 10 MB, chega com algumas centenas de KB.
-A tela mostra o resultado de cada uma, por exemplo:
+**Fotos grandes em JPG, PNG ou WEBP são otimizadas automaticamente antes
+do envio.** Não é preciso editar a foto antes. Quando a imagem passa do
+limite do servidor, o próprio painel a reduz: o lado maior fica com até
+1920 px (bem mais do que a loja precisa para mostrar) e a foto é
+recomprimida até caber. Uma foto de 5 a 10 MB costuma chegar com algumas
+centenas de KB. A tela mostra o resultado de cada uma, por exemplo:
 
 ```
 foto.jpg: 6,8 MB → 412 KB (1440 × 1920)
@@ -165,7 +168,7 @@ várias imagens de uma vez somam.
 
 | Novidade | Onde |
 |---|---|
-| **Fotos do celular** otimizadas automaticamente antes do envio | Painel → Produtos |
+| Fotos grandes em **JPG, PNG ou WEBP** otimizadas automaticamente antes do envio | Painel → Produtos |
 | Topo da loja em preto | Loja |
 | **Compra simples**: o cliente compra sem escolher cor e tamanho | Loja |
 | **Comprar** direto do cartão, sem abrir o produto | Loja |
@@ -192,8 +195,8 @@ WhatsApp; quem não escolher, compra do mesmo jeito.
 Cadastrar variação deixou de ser obrigatório. Uma peça sem cor e tamanho
 é vendida normalmente.
 
-Para voltar a **exigir** cor e tamanho, abra `config/config.php` e troque
-uma linha:
+Para voltar a **exigir** cor e tamanho, abra `config/config.php` e
+acrescente esta linha no final (ou troque o valor, se ela já existir):
 
 ```php
 define('REQUIRE_VARIANT_SELECTION', true);
