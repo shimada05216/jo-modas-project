@@ -1,10 +1,12 @@
 /**
  * Jo Modas - Painel
  *
- * Tres coisas:
+ * O que faz:
  *   - gaveta da barra lateral no celular;
- *   - cadastro de produto: slug automatico, linhas de variacao;
- *   - criacao rapida de categoria, sem sair do formulario.
+ *   - cadastro de produto: slug automatico, linhas de variacao,
+ *     conferencia antes do envio;
+ *   - criacao rapida de categoria, sem sair do formulario;
+ *   - otimizacao de fotos grandes antes do envio.
  *
  * Sem framework. Tudo degrada: se o JavaScript nao rodar, o formulario
  * continua sendo um POST comum que o PHP sabe tratar.
@@ -314,12 +316,6 @@
         var maxFiles = Number(cfg.maxImages) || 0;
         var tipos    = ['image/jpeg', 'image/png', 'image/webp'];
 
-        function tamanho(bytes) {
-            return bytes >= 1048576
-                ? String(Math.round(bytes / 1048576 * 10) / 10).replace('.', ',') + ' MB'
-                : Math.round(bytes / 1024) + ' KB';
-        }
-
         // Aceita 199,90 / 1.234,56 / 199 -- a mesma folga do parse_price.
         function toNumber(text) {
             var limpo = String(text).trim().replace(/\s/g, '');
@@ -457,11 +453,465 @@
         });
     }
 
+    // ---------------------------------------------------------
+    // Otimizacao de fotos antes do envio
+    //
+    // Foto de celular tem 4 a 10 MB, e hospedagem comum aceita 2 MB por
+    // arquivo. Comprimir no PHP nao resolve: quem passa do limite e
+    // descartado pelo proprio PHP ANTES de o codigo da loja rodar, entao
+    // nao ha arquivo nenhum para comprimir. A reducao tem de acontecer
+    // aqui, no navegador, antes do envio.
+    //
+    // Na hora em que as fotos sao escolhidas:
+    //   - o que ja cabe no limite e fica intacto;
+    //   - o que passa e redimensionado (lado maior ate 1920 px, nunca
+    //     ampliado) e recomprimido ate caber com folga;
+    //   - o arquivo no campo e trocado pelo otimizado, e o formulario
+    //     segue sendo o mesmo POST de sempre.
+    //
+    // A validacao do servidor continua inteira: isto so melhora a
+    // experiencia, nao e barreira de seguranca.
+    //
+    // Liga em qualquer <input type="file" data-optimize-images>, com os
+    // limites nos atributos data-max-bytes e data-max-post.
+    // ---------------------------------------------------------
+
+    function tamanho(bytes) {
+        return bytes >= 1048576
+            ? String(Math.round(bytes / 1048576 * 10) / 10).replace('.', ',') + ' MB'
+            : Math.max(1, Math.round(bytes / 1024)) + ' KB';
+    }
+
+    var OTIMIZA = {
+        lados: [1920, 1600, 1400, 1200],       // lado maior, em px
+        qualidades: [0.85, 0.78, 0.70, 0.62],  // piso em 0,62
+        folga: 0.90,                           // alvo = 90% do limite
+        megapixels: 50000000                   // mesmo teto do servidor
+    };
+
+    var TIPOS_ACEITOS = ['image/jpeg', 'image/png', 'image/webp'];
+    var EXTENSOES     = ['jpg', 'jpeg', 'png', 'webp'];
+
+    function extensao(nome) {
+        var partes = String(nome).split('.');
+
+        return partes.length > 1 ? partes.pop().toLowerCase() : '';
+    }
+
+    // HEIC/HEIF (iPhone) e outros formatos que a loja nao aceita. No
+    // iPhone o proprio sistema costuma converter para JPG, porque o campo
+    // so pede JPG/PNG/WEBP; quando nao converte, o aviso aparece aqui.
+    function formatoRecusado(arquivo) {
+        var ext = extensao(arquivo.name);
+
+        if (/^image\/hei[cf]/i.test(arquivo.type) || ext === 'heic' || ext === 'heif') {
+            return true;
+        }
+
+        if (arquivo.type) {
+            return TIPOS_ACEITOS.indexOf(arquivo.type) === -1;
+        }
+
+        return EXTENSOES.indexOf(ext) === -1;
+    }
+
+    // Decodifica respeitando a orientacao gravada pela camera (EXIF).
+    // Sem isso a foto tirada em pe chegaria deitada.
+    function decodificar(arquivo) {
+        function viaImagem() {
+            return new Promise(function (resolve, reject) {
+                var url = URL.createObjectURL(arquivo);
+                var img = new Image();
+
+                img.onload = function () {
+                    resolve({
+                        fonte: img,
+                        largura: img.naturalWidth,
+                        altura: img.naturalHeight,
+                        fechar: function () { URL.revokeObjectURL(url); }
+                    });
+                };
+                img.onerror = function () {
+                    URL.revokeObjectURL(url);
+                    reject(new Error('ilegivel'));
+                };
+                img.src = url;
+            });
+        }
+
+        if (typeof window.createImageBitmap !== 'function') {
+            return viaImagem();
+        }
+
+        return window.createImageBitmap(arquivo, { imageOrientation: 'from-image' })
+            .then(function (bitmap) {
+                return {
+                    fonte: bitmap,
+                    largura: bitmap.width,
+                    altura: bitmap.height,
+                    fechar: function () { if (bitmap.close) { bitmap.close(); } }
+                };
+            })
+            // Navegador antigo que nao conhece a opcao, ou que nao decodifica
+            // por aqui: tenta pela tag <img>, que tambem respeita o EXIF.
+            .catch(viaImagem);
+    }
+
+    function desenhar(imagem, lado, fundoBranco) {
+        var escala = Math.min(1, lado / Math.max(imagem.largura, imagem.altura));
+        var canvas = document.createElement('canvas');
+
+        canvas.width  = Math.max(1, Math.round(imagem.largura * escala));
+        canvas.height = Math.max(1, Math.round(imagem.altura * escala));
+
+        var ctx = canvas.getContext('2d');
+
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+
+        // JPEG nao tem transparencia: sem o fundo, o que era transparente
+        // viraria preto.
+        if (fundoBranco) {
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+
+        ctx.drawImage(imagem.fonte, 0, 0, canvas.width, canvas.height);
+
+        return canvas;
+    }
+
+    // Amostra reduzida: qualquer pixel com alfa abaixo de 255 conta.
+    function temTransparencia(imagem) {
+        var canvas = desenhar(imagem, 256, false);
+        var dados  = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data;
+
+        for (var i = 3; i < dados.length; i += 4) {
+            if (dados[i] < 255) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    function codificar(canvas, tipo, qualidade) {
+        return new Promise(function (resolve) {
+            canvas.toBlob(resolve, tipo, qualidade);
+        });
+    }
+
+    // Alguns navegadores (Safari antigo) nao geram WEBP e devolvem PNG
+    // calados. Descobre uma vez so.
+    var geraWebp = null;
+
+    function suportaWebp() {
+        if (!geraWebp) {
+            var c = document.createElement('canvas');
+
+            c.width = c.height = 2;
+            geraWebp = codificar(c, 'image/webp', 0.8).then(function (b) {
+                return !!b && b.type === 'image/webp';
+            });
+        }
+
+        return geraWebp;
+    }
+
+    function renomear(nome, tipo) {
+        var base = String(nome).replace(/\.[^.]+$/, '') || 'imagem';
+        var ext  = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp' }[tipo];
+
+        return base + '.' + ext;
+    }
+
+    function falha(tipo, arquivo) {
+        var erro = new Error(tipo);
+
+        erro.tipo = tipo;
+        erro.nome = arquivo.name;
+
+        return erro;
+    }
+
+    /**
+     * Devolve { arquivo, mudou, antes, depois, largura, altura }.
+     * Rejeita com erro.tipo = 'formato' | 'ilegivel' | 'grande'.
+     */
+    function otimizarImagem(arquivo, limite) {
+        if (formatoRecusado(arquivo)) {
+            return Promise.reject(falha('formato', arquivo));
+        }
+
+        var alvo = Math.floor(limite * OTIMIZA.folga);
+
+        return decodificar(arquivo).catch(function () {
+            // Arquivo que nao abre como imagem: texto renomeado para .jpg,
+            // download interrompido, formato que o navegador nao le.
+            throw falha('ilegivel', arquivo);
+        }).then(function (imagem) {
+            var pixels = imagem.largura * imagem.altura;
+
+            // Ja cabe e tem tamanho razoavel: segue exatamente como veio,
+            // sem recomprimir. Recompressao a toa so perde qualidade.
+            if (arquivo.size <= limite && pixels <= OTIMIZA.megapixels) {
+                imagem.fechar();
+
+                return {
+                    arquivo: arquivo, mudou: false,
+                    antes: arquivo.size, depois: arquivo.size,
+                    largura: imagem.largura, altura: imagem.altura
+                };
+            }
+
+            // Formato de saida. Foto (JPEG) continua JPEG; WEBP continua
+            // WEBP quando o navegador sabe gerar. PNG vira JPEG se nao tiver
+            // transparencia -- foto salva em PNG e so desperdicio -- e WEBP se
+            // tiver, para nao perder o recorte.
+            return suportaWebp().then(function (webp) {
+                var saida = 'image/jpeg';
+
+                if (arquivo.type === 'image/webp' || arquivo.type === 'image/png') {
+                    var transparente = temTransparencia(imagem);
+
+                    if (transparente) {
+                        saida = webp ? 'image/webp' : 'image/png';
+                    } else if (arquivo.type === 'image/webp' && webp) {
+                        saida = 'image/webp';
+                    }
+                }
+
+                var qualidades = saida === 'image/png' ? [undefined] : OTIMIZA.qualidades;
+                var tentativas = [];
+
+                OTIMIZA.lados.forEach(function (lado) {
+                    qualidades.forEach(function (q) {
+                        tentativas.push({ lado: lado, q: q });
+                    });
+                });
+
+                // Tenta em ordem: primeiro baixa a qualidade, depois o tamanho.
+                // Para na primeira que couber.
+                function proxima(i) {
+                    if (i >= tentativas.length) {
+                        imagem.fechar();
+                        throw falha('grande', arquivo);
+                    }
+
+                    var t      = tentativas[i];
+                    var canvas = desenhar(imagem, t.lado, saida === 'image/jpeg');
+
+                    return codificar(canvas, saida, t.q).then(function (blob) {
+                        if (blob && blob.type === saida && blob.size <= alvo) {
+                            imagem.fechar();
+
+                            return {
+                                arquivo: new File([blob], renomear(arquivo.name, saida), {
+                                    type: saida,
+                                    lastModified: Date.now()
+                                }),
+                                mudou: true,
+                                antes: arquivo.size,
+                                depois: blob.size,
+                                largura: canvas.width,
+                                altura: canvas.height
+                            };
+                        }
+
+                        return proxima(i + 1);
+                    });
+                }
+
+                return proxima(0);
+            });
+        });
+    }
+
+    function initImageOptimizer() {
+        // Sem DataTransfer nao da para trocar o arquivo do campo. Nesse
+        // navegador vale o comportamento anterior: o aviso de limite.
+        var trocaArquivos = true;
+
+        try { new DataTransfer(); } catch (e) { trocaArquivos = false; }
+
+        if (!trocaArquivos) {
+            return;
+        }
+
+        var travados = [];
+
+        document.querySelectorAll('input[type="file"][data-optimize-images]').forEach(function (campo) {
+            var form    = campo.form;
+            var limite  = Number(campo.dataset.maxBytes) || 0;
+            var maxPost = Number(campo.dataset.maxPost) || 0;
+            var botoes  = form ? form.querySelectorAll('button[type="submit"]') : [];
+            var rodada  = 0;
+
+            if (!form || limite <= 0) {
+                return;
+            }
+
+            // Linha de retorno logo abaixo do campo. Fora do <label>, senao
+            // clicar no texto abriria a escolha de arquivos.
+            var aviso = document.createElement('p');
+            var dono  = campo.closest('label') || campo;
+
+            aviso.className = 'upload-status';
+            aviso.setAttribute('aria-live', 'polite');
+            aviso.hidden = true;
+            dono.parentNode.insertBefore(aviso, dono.nextSibling);
+
+            // Erros em vermelho, resultado em cinza. Montado com textContent:
+            // o nome do arquivo vem de quem escolheu a foto.
+            function mostrar(erros, info) {
+                aviso.textContent = '';
+
+                [[erros, 'upload-erro'], [info, 'upload-info']].forEach(function (par) {
+                    if (!par[0] || par[0].length === 0) {
+                        return;
+                    }
+
+                    var span = document.createElement('span');
+
+                    span.className = par[1];
+                    span.textContent = par[0].join('\n');
+                    aviso.appendChild(span);
+                });
+
+                aviso.hidden = aviso.childNodes.length === 0;
+            }
+
+            function ocupado(sim) {
+                Array.prototype.forEach.call(botoes, function (botao) {
+                    if (sim) {
+                        if (!botao.dataset.rotulo) {
+                            botao.dataset.rotulo = botao.textContent;
+                        }
+                        botao.textContent = 'Otimizando imagens…';
+                    } else if (botao.dataset.rotulo) {
+                        botao.textContent = botao.dataset.rotulo;
+                    }
+                    botao.disabled = sim;
+                });
+            }
+
+            campo.addEventListener('change', function () {
+                var escolhidos = Array.prototype.slice.call(campo.files || []);
+                var minha      = ++rodada;
+
+                if (escolhidos.length === 0) {
+                    campo.setCustomValidity('');
+                    mostrar([], []);
+                    return;
+                }
+
+                // Enquanto processa, o proprio formulario recusa o envio.
+                campo.setCustomValidity('Aguarde: as imagens ainda estão sendo otimizadas.');
+                ocupado(true);
+                mostrar([], ['Otimizando imagens…']);
+
+                var prontos = [];
+                var linhas  = [];
+                var erros   = [];
+
+                // Uma de cada vez: varias fotos de 12 MP abertas juntas
+                // estouram a memoria de celular modesto.
+                var fila = escolhidos.reduce(function (anterior, arquivo) {
+                    return anterior.then(function () {
+                        return otimizarImagem(arquivo, limite).then(function (r) {
+                            prontos.push(r.arquivo);
+
+                            if (r.mudou) {
+                                linhas.push(arquivo.name + ': ' + tamanho(r.antes)
+                                    + ' → ' + tamanho(r.depois)
+                                    + ' (' + r.largura + ' × ' + r.altura + ')');
+                            }
+                        }, function (e) {
+                            var msg = {
+                                formato:  'este formato de imagem não é compatível. Use JPG, PNG ou WEBP.',
+                                ilegivel: 'não foi possível abrir este arquivo como imagem.',
+                                grande:   'não foi possível reduzir esta imagem para até '
+                                          + tamanho(limite) + '.'
+                            }[e && e.tipo] || 'não foi possível preparar esta imagem.';
+
+                            erros.push('“' + arquivo.name + '”: ' + msg);
+                        });
+                    });
+                }, Promise.resolve());
+
+                fila.then(function () {
+                    // A pessoa trocou a selecao no meio: este resultado ja
+                    // nao vale.
+                    if (minha !== rodada) {
+                        return;
+                    }
+
+                    var dt = new DataTransfer();
+
+                    prontos.forEach(function (f) { dt.items.add(f); });
+                    campo.files = dt.files;
+
+                    var soma = prontos.reduce(function (s, f) { return s + f.size; }, 0);
+
+                    // Cada foto pode caber e o envio inteiro nao. Passando de
+                    // post_max_size o PHP descarta tudo antes de validar.
+                    if (maxPost > 0 && soma > maxPost * 0.95) {
+                        erros.push('As imagens ainda somam ' + tamanho(soma)
+                            + ' após a otimização, acima do limite total permitido pelo '
+                            + 'servidor (' + tamanho(maxPost) + '). Envie menos imagens de cada vez.');
+                    }
+
+                    ocupado(false);
+
+                    if (erros.length > 0) {
+                        // Nada vai pela metade: o envio fica bloqueado ate a
+                        // selecao ser refeita. Assim nenhuma foto some calada.
+                        campo.setCustomValidity(erros[0] + (erros.length > 1
+                            ? ' (e mais ' + (erros.length - 1) + ')' : '')
+                            + ' Escolha as imagens novamente.');
+                        mostrar(erros, linhas.length > 0
+                            ? ['Já otimizadas. Para enviar, escolha as imagens de novo sem o arquivo acima:'].concat(linhas)
+                            : []);
+                        return;
+                    }
+
+                    campo.setCustomValidity('');
+                    mostrar([], linhas.length > 0
+                        ? ['Imagens otimizadas para o envio:'].concat(linhas)
+                        : []);
+                });
+            });
+
+            // Evita o segundo clique criar um produto duplicado enquanto o
+            // envio esta em andamento. Registrado depois das demais
+            // conferencias: so trava se o envio de fato seguir.
+            form.addEventListener('submit', function (event) {
+                if (event.defaultPrevented) {
+                    return;
+                }
+
+                Array.prototype.forEach.call(botoes, function (botao) {
+                    botao.disabled = true;
+                    travados.push(botao);
+                });
+            });
+        });
+
+        // Voltar pelo historico devolve a pagina como estava: botao travado.
+        window.addEventListener('pageshow', function (event) {
+            if (event.persisted) {
+                travados.forEach(function (b) { b.disabled = false; });
+                travados = [];
+            }
+        });
+    }
+
     document.addEventListener('DOMContentLoaded', function () {
         initSidebar();
         initSlug();
         initVariants();
         initCategoryModal();
         initFormCheck();
+        initImageOptimizer();
     });
 }());

@@ -404,6 +404,19 @@ td.col-num { text-align: center; }
 .field-narrow { max-width: 220px; }
 .field-hint { display: block; margin-top: 6px; font-size: 13px; color: var(--suave); }
 
+/* Retorno da otimizacao de fotos, logo abaixo do campo de arquivos. */
+.upload-status {
+    margin: 8px 0 0;
+    font-size: 13px;
+    color: var(--suave);
+    white-space: pre-line;
+    overflow-wrap: anywhere;
+}
+
+.upload-status span { display: block; }
+.upload-status .upload-erro { color: var(--erro); font-weight: 600; }
+.upload-status .upload-erro + .upload-info { margin-top: 6px; }
+
 .field-row { display: flex; gap: 16px; flex-wrap: wrap; }
 .field-row .field { flex: 1 1 220px; min-width: 0; }
 

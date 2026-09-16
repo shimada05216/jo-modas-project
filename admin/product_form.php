@@ -749,11 +749,16 @@ require __DIR__ . '/includes/header.php';
 
         <label class="field">
             <span class="field-label">Adicionar imagens</span>
+            <?php /* data-*: limites reais do servidor, para a otimizacao no navegador. */ ?>
             <input type="file" name="images[]" multiple
-                   accept="image/jpeg,image/png,image/webp">
+                   accept="image/jpeg,image/png,image/webp"
+                   data-optimize-images
+                   data-max-bytes="<?= e((string) effective_upload_limit()) ?>"
+                   data-max-post="<?= e((string) effective_post_limit()) ?>">
             <span class="field-hint">
-                JPG, PNG ou WEBP, até <?= e(format_bytes(effective_upload_limit())) ?> cada
-                (limite deste servidor).
+                JPG, PNG ou WEBP. Fotos grandes são redimensionadas e comprimidas
+                automaticamente antes do envio.
+                Limite final do servidor: <?= e(format_bytes(effective_upload_limit())) ?> por imagem.
                 Máximo de <?= e((string) MAX_IMAGES_PER_PRODUCT) ?> por produto.
                 As imagens são salvas junto com o produto.
             </span>

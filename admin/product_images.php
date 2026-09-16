@@ -309,10 +309,15 @@ require __DIR__ . '/includes/header.php';
     <label class="field">
         <span class="field-label">Enviar imagens</span>
         <input type="file" name="images[]" multiple
-               accept="image/jpeg,image/png,image/webp" required>
+               accept="image/jpeg,image/png,image/webp" required
+               data-optimize-images
+               data-max-bytes="<?= e((string) effective_upload_limit()) ?>"
+               data-max-post="<?= e((string) effective_post_limit()) ?>">
         <span class="field-hint">
-            JPG, PNG ou WEBP, até <?= e(format_bytes(effective_upload_limit())) ?> cada.
-            Maximo de <?= e((string) MAX_IMAGES_PER_PRODUCT) ?> imagens por produto
+            JPG, PNG ou WEBP. Fotos grandes são redimensionadas e comprimidas
+            automaticamente antes do envio.
+            Limite final do servidor: <?= e(format_bytes(effective_upload_limit())) ?> por imagem.
+            Máximo de <?= e((string) MAX_IMAGES_PER_PRODUCT) ?> imagens por produto
             (<?= e((string) count($images)) ?> já enviadas).
         </span>
     </label>
