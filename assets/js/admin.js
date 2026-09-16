@@ -851,6 +851,10 @@
                     prontos.forEach(function (f) { dt.items.add(f); });
                     campo.files = dt.files;
 
+                    // Quantos arquivos, individualmente, deram problema. Conta
+                    // antes do aviso de total, que nao e culpa de nenhum deles.
+                    var arquivosRuins = erros.length;
+
                     var soma = prontos.reduce(function (s, f) { return s + f.size; }, 0);
 
                     // Cada foto pode caber e o envio inteiro nao. Passando de
@@ -869,9 +873,14 @@
                         campo.setCustomValidity(erros[0] + (erros.length > 1
                             ? ' (e mais ' + (erros.length - 1) + ')' : '')
                             + ' Escolha as imagens novamente.');
-                        mostrar(erros, linhas.length > 0
-                            ? ['Já otimizadas. Para enviar, escolha as imagens de novo sem o arquivo acima:'].concat(linhas)
-                            : []);
+
+                        // O que fazer depende do problema: um arquivo ruim sai
+                        // da selecao; so o total alto pede menos fotos por vez.
+                        var orientacao = arquivosRuins > 0
+                            ? 'Já otimizadas. Para enviar, escolha as imagens de novo sem o arquivo com problema:'
+                            : 'Já otimizadas. Para enviar, escolha menos imagens de cada vez:';
+
+                        mostrar(erros, linhas.length > 0 ? [orientacao].concat(linhas) : []);
                         return;
                     }
 
