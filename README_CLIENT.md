@@ -119,13 +119,34 @@ A atualização termina aqui. Os passos numerados adiante são para
 
 ## Limite de tamanho das imagens
 
-O sistema **detecta sozinho** o limite configurado no PHP do servidor e
-mostra esse valor na tela de cadastro de produto. Se a hospedagem estiver
-com `upload_max_filesize = 2M`, o painel dirá **2 MB** — e vai avisar
-antes do envio se a imagem passar disso, em vez de deixar o envio falhar
-sem explicação.
+**Pode escolher a foto direto do celular, do jeito que ela saiu da
+câmera.** Quando a imagem passa do limite do servidor, o próprio painel
+a reduz antes do envio: o lado maior fica com até 1920 px (bem mais do
+que a loja precisa para mostrar) e a foto é recomprimida até caber. Uma
+foto típica de celular, de 5 a 10 MB, chega com algumas centenas de KB.
+A tela mostra o resultado de cada uma, por exemplo:
 
-Se quiser permitir imagens maiores, até 5 MB, ajuste no
+```
+foto.jpg: 6,8 MB → 412 KB (1440 × 1920)
+```
+
+Fotos que já cabem no limite são enviadas **exatamente como estão**, sem
+perder qualidade. A orientação da foto é respeitada: foto tirada em pé
+continua em pé.
+
+Formatos aceitos: **JPG, PNG e WEBP**. O formato HEIC do iPhone não é
+aceito — mas, ao escolher a foto pelo painel, o próprio iPhone costuma
+convertê-la para JPG sozinho. Se aparecer o aviso *"Este formato de
+imagem não é compatível"*, exporte a foto como JPG.
+
+O sistema **detecta sozinho** o limite configurado no PHP do servidor e o
+mostra na tela de cadastro. Se a hospedagem estiver com
+`upload_max_filesize = 2M`, o painel dirá **2 MB** e reduzirá as fotos
+até esse tamanho.
+
+Com a otimização automática, **não é preciso mexer em nada**. Aumentar o
+limite só faz diferença se você quiser que fotos de até 5 MB sejam
+enviadas sem nenhuma redução. Nesse caso, ajuste no
 **hPanel → PHP Configuration** (quando disponível no seu plano):
 
 ```
@@ -136,8 +157,7 @@ post_max_size = 16M
 `post_max_size` precisa ser maior, porque vale para o envio inteiro —
 várias imagens de uma vez somam.
 
-**Isto é opcional.** A loja funciona normalmente sem mexer em nada; só
-respeita o limite que o servidor já tiver.
+**Isto é opcional.** A loja funciona normalmente sem mexer em nada.
 
 ---
 
@@ -145,6 +165,8 @@ respeita o limite que o servidor já tiver.
 
 | Novidade | Onde |
 |---|---|
+| **Fotos do celular** otimizadas automaticamente antes do envio | Painel → Produtos |
+| Topo da loja em preto | Loja |
 | **Compra simples**: o cliente compra sem escolher cor e tamanho | Loja |
 | **Comprar** direto do cartão, sem abrir o produto | Loja |
 | Variação passa a ser **opcional** no cadastro | Painel → Produtos |
