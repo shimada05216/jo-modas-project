@@ -30,6 +30,12 @@
     --color-accent-soft: #f7f0e2;
     --color-accent-line: #e6d7b8;
 
+    /* Topo da loja. So o cabecalho e escuro; o resto da pagina segue
+       claro. Mesmo preto do logo e do painel, e o mesmo branco-quente
+       do logo-light.svg, para o texto casar com a marca. */
+    --color-header-bg:   #111111;
+    --color-header-text: #f7f5f0;
+
     /* ------------------------------------------------------------
        Nomes antigos, mantidos como apelido para nao reescrever as
        centenas de regras que ja existem. A cor vem toda daqui de cima.
@@ -112,7 +118,7 @@ h1, h2, h3 { margin: 0; line-height: 1.18; font-weight: 600; }
     position: sticky;
     top: 0;
     z-index: 60;
-    background: var(--branco);
+    background: var(--color-header-bg);
     box-shadow: 0 1px 0 var(--linha);
 }
 
@@ -145,7 +151,7 @@ h1, h2, h3 { margin: 0; line-height: 1.18; font-weight: 600; }
     display: block;
     height: 2px;
     border-radius: 2px;
-    background: var(--tinta);
+    background: var(--color-header-text);
     transition: transform .22s ease, opacity .22s ease;
 }
 
@@ -168,7 +174,7 @@ body.menu-open .hdr-burger span:nth-child(3) { transform: translateY(-8px) rotat
     width: 23px;
     height: 23px;
     fill: none;
-    stroke: var(--tinta);
+    stroke: var(--color-header-text);
     stroke-width: 1.6;
     stroke-linecap: round;
     stroke-linejoin: round;
@@ -182,8 +188,9 @@ body.menu-open .hdr-burger span:nth-child(3) { transform: translateY(-8px) rotat
     height: 18px;
     padding: 0 5px;
     border-radius: 999px;
-    background: var(--color-primary);
-    color: #fff;
+    /* Sobre o topo preto, contador preto sumiria: vira dourado. */
+    background: var(--color-accent);
+    color: var(--color-header-bg);
     font-size: 11px;
     font-weight: 700;
     line-height: 18px;
@@ -1079,12 +1086,16 @@ body.menu-open .nav { transform: translateX(0); visibility: visible; }
         font-weight: 700;
         letter-spacing: .1em;
         text-transform: uppercase;
-        color: var(--tinta);
+        /* No desktop o menu mora no topo escuro. O dourado claro
+           (8:1 sobre o preto) substitui o escuro, que so funciona
+           sobre fundo branco. O submenu suspenso tem fundo branco
+           proprio e mantem as cores dele. */
+        color: var(--color-header-text);
         white-space: nowrap;
     }
 
-    .nav-link:hover { color: var(--color-accent-dark); }
-    .nav-link.is-active { color: var(--color-accent-dark); }
+    .nav-link:hover { color: var(--color-accent); }
+    .nav-link.is-active { color: var(--color-accent); }
 
     /* Submenu suspenso das categorias */
     .nav-drop { position: relative; }

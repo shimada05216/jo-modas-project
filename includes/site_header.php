@@ -48,7 +48,7 @@ $navItems   = active_categories();
         </button>
 
         <a class="hdr-logo" href="<?= e(base_url('index.php')) ?>">
-            <img src="<?= e(asset_url('images/logo.svg')) ?>"
+            <img src="<?= e(asset_url('images/logo-light.svg')) ?>"
                  alt="<?= e($storeName) ?> - moda feminina" width="300" height="78">
         </a>
 
